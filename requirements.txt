@@ -1,0 +1,10 @@
+python-docx
+pandas
+gunicorn
+flask
+PySide6
+SQLAlchemy
+docxcompose
+docx2pdf
+pywin32
+Werkzeug
