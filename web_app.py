@@ -7,6 +7,7 @@ import zipfile
 from datetime import date, datetime
 
 from flask import Flask, flash, g, jsonify, redirect, render_template, request, send_file, session as browser_session, url_for
+from jinja2 import ChoiceLoader, FileSystemLoader
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -82,6 +83,10 @@ REPORT_TYPES = {
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("RL_METAIS_SECRET", "dev-secret-change-me")
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(os.path.join(BASE_DIR, "templates")),
+    FileSystemLoader(BASE_DIR),
+])
 
 
 def _ensure_dirs() -> None:
