@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RL Metais Relatórios</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='web.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='rlmetais_logo.png') }}" alt="RL Metais">
+    </a>
+    <nav>
+      {% if g.user_id %}
+        <span>{{ g.organization_name }}</span>
+        <a href="{{ url_for('clientes') }}">Clientes</a>
+        <a href="{{ url_for('insumos') }}">Insumos</a>
+        <a href="{{ url_for('emitir_relatorio') }}">Gerar Relatórios</a>
+        <form method="post" action="{{ url_for('logout') }}">
+          <button class="nav-button" type="submit">Sair</button>
+        </form>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% set visible_messages = messages | rejectattr('0', 'equalto', 'success') | list %}
+      {% if visible_messages %}
+        <div class="alerts">
+          {% for category, message in visible_messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

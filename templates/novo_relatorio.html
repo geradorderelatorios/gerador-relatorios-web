@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="panel form" method="post" enctype="multipart/form-data">
+  <div class="section-title">
+    <h1>Novo {{ config.name }}</h1>
+    <a href="{{ url_for('clientes') }}">Cadastrar cliente</a>
+  </div>
+
+  <div class="grid two">
+    <label>Cliente *
+      <select name="cliente_id" required>
+        <option value="">Selecione...</option>
+        {% for cliente in clientes %}
+          <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Número do relatório *
+      <input name="NUMRELATORIO" required>
+    </label>
+  </div>
+
+  <div class="grid two">
+    <label>Data da inspeção
+      <input name="DATA_INSP" type="date" value="{{ today }}">
+    </label>
+    <label>Laudo
+      <select name="LAUDO">
+        <option value="A">Aprovado</option>
+        <option value="R">Reprovado</option>
+      </select>
+    </label>
+  </div>
+
+  {% if report_key == 'lp' %}
+    <div class="grid two">
+      <label>Penetrante
+        <select name="penetrante_id">
+          <option value="">Selecione...</option>
+          {% for insumo in penetrantes %}
+            <option value="{{ insumo.id }}">{{ insumo.nome }}{% if insumo.lote %} - Lote {{ insumo.lote }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Revelador
+        <select name="revelador_id">
+          <option value="">Selecione...</option>
+          {% for insumo in reveladores %}
+            <option value="{{ insumo.id }}">{{ insumo.nome }}{% if insumo.lote %} - Lote {{ insumo.lote }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <p class="form-note">As datas de fabricação, validade e lote serão preenchidas automaticamente pelo cadastro de insumos.</p>
+  {% endif %}
+
+  <div class="grid two">
+    {% for field_name, label, field_type in config.fields %}
+      <label>{{ label }}
+        <input name="{{ field_name }}" type="{{ field_type }}">
+      </label>
+    {% endfor %}
+  </div>
+
+  <div class="grid three">
+    {% for photo in config.photos %}
+      <label>{{ photo.replace('_', ' ') }}
+        <input name="{{ photo }}" type="file" accept="image/*">
+      </label>
+    {% endfor %}
+  </div>
+
+  <button class="button primary" type="submit">Gerar relatório</button>
+</form>
+{% endblock %}

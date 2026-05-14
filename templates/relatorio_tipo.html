@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Relatório - Escolher Tipo{% endblock %}
+
+{% block content %}
+  <h2>Novo Relatório</h2>
+  <p>Selecione o tipo de ensaio:</p>
+
+  <form method="post">
+    <label>
+      <input type="radio" name="tipo" value="US" checked>
+      Ultrassom (US)
+    </label><br>
+
+    <label>
+      <input type="radio" name="tipo" value="LP">
+      Líquido Penetrante (LP)
+    </label><br>
+
+    <label>
+      <input type="radio" name="tipo" value="PM">
+      Partículas Magnéticas (PM)
+    </label><br><br>
+
+    <button type="submit">Continuar</button>
+  </form>
+
+  <p style="margin-top: 16px;">
+    <a href="{{ url_for('dashboard') }}">Voltar ao menu principal</a>
+  </p>
+{% endblock %}

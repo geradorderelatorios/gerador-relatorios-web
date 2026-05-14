@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Relatório Gerado{% endblock %}
+
+{% block content %}
+  <h2>Relatório Gerado com Sucesso</h2>
+  <p>O arquivo foi criado e salvo na pasta configurada.</p>
+
+  {% if caminho_docx %}
+  <p>
+    Nome do arquivo:
+    <a href="{{ url_for('download_relatorio', nome_arquivo=caminho_docx) }}">
+      <strong>{{ caminho_docx }}</strong>
+    </a>
+  </p>
+  {% endif %}
+
+  <p style="margin-top: 16px;">
+    <a href="{{ url_for('dashboard') }}">Voltar ao menu principal</a>
+  </p>
+{% endblock %}

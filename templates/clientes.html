@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="split">
+  <form class="panel form" method="post" action="{{ url_for('salvar_cliente') }}" id="cliente-form">
+    <div class="section-title">
+      <h1>{{ "Alterar cliente" if selected else "Novo cliente" }}</h1>
+      {% if selected %}
+        <a href="{{ url_for('clientes') }}">Novo cadastro</a>
+      {% endif %}
+    </div>
+
+    <input type="hidden" name="cliente_id" value="{{ selected.id if selected else '' }}">
+
+    <div class="grid two">
+      <label>CNPJ
+        <input name="cnpj" id="cnpj" value="{{ selected.cnpj if selected else '' }}">
+      </label>
+      <label>&nbsp;
+        <button class="button" type="button" id="buscar-cnpj">Buscar CNPJ</button>
+      </label>
+    </div>
+
+    <label>Razão social *
+      <input name="razao_social" id="razao_social" required value="{{ selected.razao_social if selected else '' }}">
+    </label>
+    <label>Contato
+      <input name="contato" id="contato" value="{{ selected.contato if selected else '' }}">
+    </label>
+    <label>Inscrição estadual
+      <input name="ie" id="ie" value="{{ selected.ie if selected else '' }}">
+    </label>
+
+    <div class="grid two">
+      <label>Rua
+        <input name="rua" id="rua" value="{{ selected.rua if selected else '' }}">
+      </label>
+      <label>Número
+        <input name="numero" id="numero" value="{{ selected.numero if selected else '' }}">
+      </label>
+    </div>
+
+    <div class="grid three">
+      <label>Bairro
+        <input name="bairro" id="bairro" value="{{ selected.bairro if selected else '' }}">
+      </label>
+      <label>Cidade
+        <input name="cidade" id="cidade" value="{{ selected.cidade if selected else '' }}">
+      </label>
+      <label>UF
+        <input name="uf" id="uf" maxlength="2" value="{{ selected.uf if selected else '' }}">
+      </label>
+    </div>
+
+    <div class="grid three">
+      <label>CEP
+        <input name="cep" id="cep" value="{{ selected.cep if selected else '' }}">
+      </label>
+      <label>DDD
+        <input name="ddd" id="ddd" value="{{ selected.ddd if selected else '' }}">
+      </label>
+      <label>Telefone
+        <input name="telefone" id="telefone" value="{{ selected.telefone if selected else '' }}">
+      </label>
+    </div>
+
+    <label>E-mail
+      <input name="email" id="email" type="email" value="{{ selected.email if selected else '' }}">
+    </label>
+
+    <div class="actions">
+      <button class="button primary" type="submit" name="action" value="save">Salvar</button>
+      {% if selected %}
+        <button class="button danger" type="submit" name="action" value="delete" onclick="return confirm('Deseja excluir este cliente?')">Excluir</button>
+      {% endif %}
+    </div>
+    <p class="form-note" id="cnpj-status" hidden></p>
+  </form>
+
+  <section class="panel client-panel">
+    <div class="section-title">
+      <h2>Clientes cadastrados</h2>
+      <span>{{ clientes|length }}</span>
+    </div>
+    {% if clientes %}
+      <div class="client-list">
+        {% for cliente in clientes %}
+          <a class="client-item {% if selected and selected.id == cliente.id %}active{% endif %}" href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}">
+            <strong>{{ cliente.razao_social }}</strong>
+            <span>{{ cliente.cnpj or 'CNPJ não informado' }}</span>
+            <small>{{ cliente.cidade or 'Cidade não informada' }}{% if cliente.uf %} / {{ cliente.uf }}{% endif %}</small>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Nenhum cliente cadastrado.</p>
+    {% endif %}
+  </section>
+</section>
+
+<script>
+  const button = document.getElementById("buscar-cnpj");
+  const statusBox = document.getElementById("cnpj-status");
+
+  function setValue(id, value) {
+    const field = document.getElementById(id);
+    if (field && value) field.value = value;
+  }
+
+  button?.addEventListener("click", async () => {
+    const cnpj = document.getElementById("cnpj").value.replace(/\D/g, "");
+    statusBox.hidden = false;
+    statusBox.textContent = "Consultando CNPJ...";
+
+    try {
+      const response = await fetch(`/api/cnpj/${cnpj}`);
+      const data = await response.json();
+      if (!response.ok) {
+        statusBox.textContent = data.error || "Não foi possível consultar o CNPJ.";
+        return;
+      }
+
+      setValue("razao_social", data.razao_social);
+      setValue("cnpj", data.cnpj);
+      setValue("rua", data.rua);
+      setValue("numero", data.numero);
+      setValue("bairro", data.bairro);
+      setValue("cidade", data.cidade);
+      setValue("uf", data.uf);
+      setValue("cep", data.cep);
+      setValue("ddd", data.ddd);
+      setValue("telefone", data.telefone);
+      setValue("email", data.email);
+      statusBox.textContent = "Dados preenchidos pelo CNPJ.";
+    } catch (error) {
+      statusBox.textContent = "Serviço de CNPJ indisponível no momento.";
+    }
+  });
+</script>
+{% endblock %}

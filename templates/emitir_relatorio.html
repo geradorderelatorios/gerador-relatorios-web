@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="panel form" method="post" enctype="multipart/form-data">
+  <div class="section-title">
+    <h1>Emitir relatórios</h1>
+    <a href="{{ url_for('insumos') }}">Cadastrar insumos</a>
+  </div>
+
+  <div class="grid three">
+    <label class="check-option">
+      <input name="incluir_lp" type="checkbox" value="1" {% if default_report == 'lp' %}checked{% endif %}>
+      Gerar Relatório de Líquidos Penetrantes
+    </label>
+    <label class="check-option">
+      <input name="incluir_pm" type="checkbox" value="1" {% if default_report == 'pm' %}checked{% endif %}>
+      Gerar Relatório de Partículas Magnéticas
+    </label>
+    <label class="check-option">
+      <input name="incluir_us" type="checkbox" value="1" {% if default_report == 'us' %}checked{% endif %}>
+      Gerar Relatório de Ultrassom
+    </label>
+  </div>
+
+  <div class="grid two">
+    <label>Formato de saída
+      <select name="output_mode">
+        <option value="unico">Gerar todos em um único arquivo</option>
+        <option value="separados">Gerar laudos separados</option>
+      </select>
+    </label>
+    <label>Cliente *
+      <select name="cliente_id" required>
+        <option value="">Selecione...</option>
+        {% for cliente in clientes %}
+          <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <div class="grid three">
+    <label>Número do relatório *
+      <input name="NUMRELATORIO" required>
+    </label>
+    <label>Data da inspeção
+      <input name="DATA_INSP" type="date" value="{{ today }}">
+    </label>
+    <label>Laudo
+      <select name="LAUDO">
+        <option value="A">Aprovado</option>
+        <option value="R">Reprovado</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="grid two">
+    <label>Peça inspecionada
+      <input name="PECA_INSP">
+    </label>
+    <label>Número do desenho / OP
+      <input name="NUM_DESENHO">
+    </label>
+    <label>Quantidade
+      <input name="QUANTIDADE">
+    </label>
+    <label>Local da inspeção
+      <input name="LOCAL_INSP">
+    </label>
+    <label>Temperatura
+      <input name="TEMPERATURA">
+    </label>
+    <label>Condição da superfície
+      <input name="COND_SUPERFICIAL">
+    </label>
+    <label>Material
+      <input name="MATERIAL">
+    </label>
+    <label>Região inspecionada
+      <input name="REGIAO_INSP">
+    </label>
+    <label>Espessura
+      <input name="ESPESSURA">
+    </label>
+  </div>
+
+  <section class="subsection">
+    <h2>Insumos</h2>
+    <div class="grid three">
+      <label>Líquido penetrante
+        <select name="penetrante_id">
+          <option value="">Selecione...</option>
+          {% for insumo in penetrantes %}
+            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Revelador
+        <select name="revelador_id">
+          <option value="">Selecione...</option>
+          {% for insumo in reveladores %}
+            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Partícula magnética
+        <select name="particula_id">
+          <option value="">Selecione...</option>
+          {% for insumo in particulas %}
+            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="subsection">
+    <h2>Fotos</h2>
+    <div class="grid three">
+      <label>Foto 1 / capa
+        <input name="FOTO_1" type="file" accept="image/*">
+      </label>
+      <label>Foto 2
+        <input name="FOTO_2" type="file" accept="image/*">
+      </label>
+      <label>Foto 3
+        <input name="FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <button class="button primary" type="submit">Gerar relatório</button>
+</form>
+{% endblock %}

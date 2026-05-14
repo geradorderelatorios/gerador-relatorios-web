@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="split">
+  <form class="panel form" method="post">
+    <h1>Cadastro de insumos</h1>
+    <label>Tipo *
+      <select name="tipo" required>
+        <option value="penetrante">Líquido penetrante</option>
+        <option value="revelador">Revelador</option>
+        <option value="particula">Partícula magnética</option>
+      </select>
+    </label>
+    <label>Fabricante
+      <input name="fabricante">
+    </label>
+    <div class="grid two">
+      <label>Penetrante / Revelador / Partícula - fabricação
+        <input name="data_fabricacao" type="month">
+      </label>
+      <label>Penetrante / Revelador / Partícula - validade
+        <input name="data_validade" type="month">
+      </label>
+    </div>
+    <label>Penetrante / Revelador / Partícula - lote
+      <input name="lote">
+    </label>
+    <button class="button primary" type="submit">Salvar insumo</button>
+  </form>
+
+  <section class="panel">
+    <h2>Insumos cadastrados</h2>
+    {% if insumos %}
+      <div class="list">
+        {% for insumo in insumos %}
+          <div class="list-item">
+            <strong>
+              {% if insumo.tipo == "penetrante" %}Líquido penetrante{% elif insumo.tipo == "particula" %}Partícula magnética{% else %}Revelador{% endif %}
+              - {{ insumo.nome }}
+            </strong>
+            <span>Lote {{ insumo.lote or "-" }} | Validade {{ insumo.data_validade or "-" }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Nenhum insumo cadastrado.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

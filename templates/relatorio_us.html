@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Relatório Ultrassom{% endblock %}
+
+{% block content %}
+<h2>Relatório Ultrassom (US)</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+  <label>Número do Relatório *</label>
+  <input type="text" name="NUMRELATORIO" required>
+
+  <label>Empresa *</label>
+  <input type="text" name="EMPRESA" required>
+
+  <label>Equipamento</label>
+  <input type="text" name="EQUIPAMENTO">
+
+  <label>Nº de Série</label>
+  <input type="text" name="NUM_SERIE">
+
+  <label>Quantidade</label>
+  <input type="number" name="QTDE">
+
+  <label>Data da Inspeção *</label>
+  <input type="date" name="DATA_INSP" required>
+
+
+  <label>Selecionar Foto Capa (FOTO_1)</label>
+  <input type="file" name="FOTO_1" accept="image/*">
+
+
+  <hr>
+  <h3>Resultado do Laudo</h3>
+
+  <label>Laudo *</label>
+  <select name="LAUDO" id="campo_laudo" required>
+      <option value="A">Aprovado</option>
+      <option value="R">Reprovado</option>
+  </select>
+
+  <!-- CAMPOS MOSTRADOS SOMENTE PARA REPROVADO -->
+  <div id="campos_reprovado" style="display:none">
+
+      <label>Tipo da Descontinuidade ({{TIPO_DESC}})</label>
+      <input type="text" name="TIPO_DESC">
+
+      <label>Localização ({{LOC_DESC}})</label>
+      <input type="text" name="LOC_DESC">
+
+      <label>Dimensão ({{DIM_DESC}})</label>
+      <input type="text" name="DIM_DESC">
+
+  </div>
+
+
+  <hr>
+  <h3>Fotos do Ensaio</h3>
+
+  <label>Foto US 1 (FOTO_2)</label>
+  <input type="file" name="FOTO_2" accept="image/*">
+
+  <label>Foto US 2 (FOTO_3)</label>
+  <input type="file" name="FOTO_3" accept="image/*">
+
+
+  <br><br>
+  <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+
+</form>
+
+<script>
+const selectLaudo = document.getElementById('campo_laudo');
+const camposRep = document.getElementById('campos_reprovado');
+
+function atualizarCampos() {
+    if(selectLaudo.value === 'R'){
+        camposRep.style.display = 'block';
+    } else {
+        camposRep.style.display = 'none';
+    }
+}
+
+selectLaudo.addEventListener('change', atualizarCampos);
+window.onload = atualizarCampos;
+</script>
+
+{% endblock %}
