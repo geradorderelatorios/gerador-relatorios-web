@@ -1,9 +1,7 @@
-python-docx
-pandas
+Flask
 gunicorn
-flask
-PySide6
 SQLAlchemy
-docxcompose
-docx2pdf
 Werkzeug
+python-docx
+docxcompose
+psycopg2-binary
