@@ -9,3 +9,5 @@ web_uploads/
 output/
 RLMetais/
 *.log
+*.zip
+deploy_extraido/
