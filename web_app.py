@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from config_relatorios import get_output_dir
 from database import get_session, init_db
-from models import Cliente, EntradaRelatorio, Insumo, Organization, TipoRelatorio, User
+from models import Cliente, EntradaRelatorio, Insumo, Organization, TemplateEmpresa, TipoRelatorio, User
 from reports_lp import generate_lp_report
 from reports_pm import generate_pm_report
 from reports_combo import generate_end_combo_report
@@ -23,6 +23,7 @@ from reports_ultrassom import generate_ultrassom_report
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 UPLOAD_DIR = os.environ.get("RL_METAIS_UPLOAD_DIR") or os.path.join(BASE_DIR, "web_uploads")
+ORG_TEMPLATES_DIR = os.environ.get("RL_METAIS_TEMPLATE_DIR") or os.path.join(BASE_DIR, "organization_templates")
 
 REPORT_TYPES = {
     "lp": {
@@ -145,14 +146,15 @@ FALLBACK_TEMPLATES = {
 }
 
 app.jinja_loader = ChoiceLoader([
-    DictLoader(FALLBACK_TEMPLATES),
     FileSystemLoader(os.path.join(BASE_DIR, "templates")),
+    DictLoader(FALLBACK_TEMPLATES),
     FileSystemLoader(BASE_DIR),
 ])
 
 
 def _ensure_dirs() -> None:
     os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(ORG_TEMPLATES_DIR, exist_ok=True)
     os.makedirs(get_output_dir(), exist_ok=True)
 
 
@@ -164,21 +166,30 @@ def _current_user(db_session):
 
 
 def _require_login():
-    open_routes = {"login", "setup", "static"}
-    if request.endpoint in open_routes:
-        return None
+    open_routes = {"index", "login", "signup", "setup", "forgot_password", "oauth_google", "oauth_facebook", "static"}
+    g.user_id = None
+    g.organization_id = None
+    g.user_name = ""
+    g.organization_name = ""
+    g.user_role = ""
 
     db_session = get_session()
     try:
         user = _current_user(db_session)
-        if not user:
-            return redirect(url_for("login"))
-        g.user_id = user.id
-        g.organization_id = user.organization_id
-        g.user_name = user.nome
-        g.organization_name = user.organization.nome if user.organization else ""
+        if user:
+            g.user_id = user.id
+            g.organization_id = user.organization_id
+            g.user_name = user.nome
+            g.organization_name = user.organization.nome if user.organization else ""
+            g.user_role = user.role
     finally:
         db_session.close()
+
+    if request.endpoint in open_routes:
+        return None
+
+    if not g.user_id:
+        return redirect(url_for("login"))
     return None
 
 
@@ -327,6 +338,20 @@ def _make_zip(paths: list[str], report_num: str) -> str:
     return zip_path
 
 
+def _active_template_paths(db_session, org_id: int) -> dict[str, str]:
+    templates = (
+        db_session.query(TemplateEmpresa)
+        .filter_by(organization_id=org_id, ativo=1)
+        .order_by(TemplateEmpresa.criado_em.desc())
+        .all()
+    )
+    selected = {}
+    for template in templates:
+        if template.tipo not in selected and os.path.exists(template.file_path):
+            selected[template.tipo] = template.file_path
+    return selected
+
+
 def _only_digits(value: str) -> str:
     return re.sub(r"\D", "", value or "")
 
@@ -382,7 +407,7 @@ def setup():
                 nome=name,
                 email=email,
                 password_hash=generate_password_hash(password),
-                role="admin",
+                role="master",
             )
             db_session.add(user)
 
@@ -394,9 +419,49 @@ def setup():
             db_session.commit()
             browser_session["user_id"] = user.id
             flash("Conta criada. Agora a base web já está isolada por empresa.", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
 
         return render_template("setup.html")
+    finally:
+        db_session.close()
+
+
+@app.route("/cadastro", methods=["GET", "POST"])
+def signup():
+    db_session = get_session()
+    try:
+        if request.method == "POST":
+            org_name = request.form.get("organization_name", "").strip()
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            password = request.form.get("password", "")
+
+            if not org_name or not name or not email or len(password) < 6:
+                flash("Preencha empresa, nome, e-mail e uma senha com pelo menos 6 caracteres.", "error")
+                return redirect(url_for("signup"))
+
+            existing = db_session.query(User).filter_by(email=email).first()
+            if existing:
+                flash("Já existe uma conta com este e-mail.", "error")
+                return redirect(url_for("signup"))
+
+            org = Organization(nome=org_name)
+            db_session.add(org)
+            db_session.flush()
+
+            user = User(
+                organization_id=org.id,
+                nome=name,
+                email=email,
+                password_hash=generate_password_hash(password),
+                role="admin",
+            )
+            db_session.add(user)
+            db_session.commit()
+            browser_session["user_id"] = user.id
+            return redirect(url_for("dashboard"))
+
+        return render_template("signup.html")
     finally:
         db_session.close()
 
@@ -418,11 +483,29 @@ def login():
 
             browser_session["user_id"] = user.id
             flash("Login realizado.", "success")
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
 
         return render_template("login.html")
     finally:
         db_session.close()
+
+
+@app.route("/esqueci-minha-senha")
+def forgot_password():
+    flash("Recuperação de senha será habilitada na próxima etapa.", "error")
+    return redirect(url_for("login"))
+
+
+@app.route("/auth/google")
+def oauth_google():
+    flash("Login com Google ainda precisa ser configurado no provedor OAuth.", "error")
+    return redirect(url_for("login"))
+
+
+@app.route("/auth/facebook")
+def oauth_facebook():
+    flash("Login com Facebook ainda precisa ser configurado no provedor OAuth.", "error")
+    return redirect(url_for("login"))
 
 
 @app.route("/logout", methods=["POST"])
@@ -434,6 +517,11 @@ def logout():
 
 @app.route("/")
 def index():
+    return render_template("landing.html")
+
+
+@app.route("/app")
+def dashboard():
     session = get_session()
     try:
         org_id = _current_org_id()
@@ -445,6 +533,56 @@ def index():
         )
     finally:
         session.close()
+
+
+@app.route("/templates", methods=["GET", "POST"])
+def templates_empresa():
+    db_session = get_session()
+    try:
+        org_id = _current_org_id()
+
+        if request.method == "POST":
+            tipo = request.form.get("tipo", "").strip()
+            nome = request.form.get("nome", "").strip()
+            upload = request.files.get("template_file")
+
+            if tipo not in {"capa", "lp", "pm", "us"} or not nome or not upload or not upload.filename:
+                flash("Informe o tipo, o nome e selecione um arquivo DOCX.", "error")
+                return redirect(url_for("templates_empresa"))
+
+            filename = secure_filename(upload.filename)
+            if not filename.lower().endswith(".docx"):
+                flash("O template deve estar no formato DOCX.", "error")
+                return redirect(url_for("templates_empresa"))
+
+            folder = os.path.join(ORG_TEMPLATES_DIR, str(org_id), tipo)
+            os.makedirs(folder, exist_ok=True)
+            path = os.path.join(folder, f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}")
+            upload.save(path)
+
+            for old_template in db_session.query(TemplateEmpresa).filter_by(organization_id=org_id, tipo=tipo, ativo=1).all():
+                old_template.ativo = 0
+
+            db_session.add(TemplateEmpresa(
+                organization_id=org_id,
+                tipo=tipo,
+                nome=nome,
+                file_path=path,
+                ativo=1,
+            ))
+            db_session.commit()
+            flash("Template personalizado salvo para esta empresa.", "success")
+            return redirect(url_for("templates_empresa"))
+
+        templates = (
+            db_session.query(TemplateEmpresa)
+            .filter_by(organization_id=org_id)
+            .order_by(TemplateEmpresa.criado_em.desc())
+            .all()
+        )
+        return render_template("templates_empresa.html", templates=templates)
+    finally:
+        db_session.close()
 
 
 @app.route("/clientes", methods=["GET", "POST"])
@@ -795,6 +933,7 @@ def emitir_relatorio():
             for photo_name in ["FOTO_1", "FOTO_2", "FOTO_3"]:
                 dados[photo_name] = _save_upload(numrel, photo_name)
             dados.update(_cliente_mapping(cliente))
+            template_paths = _active_template_paths(db_session, org_id)
 
             generated_paths = []
             if request.form.get("output_mode") == "separados":
@@ -808,6 +947,7 @@ def emitir_relatorio():
                         dados_pm=dados,
                         dados_us=dados,
                         foto_capa=dados.get("FOTO_1"),
+                        template_paths=template_paths,
                     )
                     final_path = os.path.splitext(docx_path)[0].replace("-END", f"-{REPORT_TYPES[report_key]['suffix']}") + ".docx"
                     if docx_path != final_path:
@@ -824,6 +964,7 @@ def emitir_relatorio():
                     dados_pm=dados,
                     dados_us=dados,
                     foto_capa=dados.get("FOTO_1"),
+                    template_paths=template_paths,
                 )
 
             tipo = _ensure_report_type(

@@ -506,7 +506,7 @@
 
           <div class="login-options">
             <label class="remember"><input name="remember" type="checkbox" checked> Lembrar de mim</label>
-            <a class="forgot" href="#">Esqueci minha senha</a>
+            <a class="forgot" href="{{ url_for('forgot_password') }}">Esqueci minha senha</a>
           </div>
 
           <button class="submit" type="submit">Entrar</button>
@@ -514,11 +514,11 @@
           <div class="divider">ou</div>
 
           <div class="social">
-            <button type="button">G&nbsp;&nbsp; Continuar com Google</button>
-            <button type="button">&nbsp;&nbsp; Continuar com Apple</button>
+            <button type="button" onclick="location.href='{{ url_for('oauth_google') }}'">G&nbsp;&nbsp; Continuar com Google</button>
+            <button type="button" onclick="location.href='{{ url_for('oauth_facebook') }}'">f&nbsp;&nbsp; Continuar com Facebook</button>
           </div>
 
-          <p class="signup">Não tem uma conta? <a href="{{ url_for('setup') }}">Crie sua conta</a></p>
+          <p class="signup">Não tem uma conta? <a href="{{ url_for('signup') }}">Crie sua conta</a></p>
         </form>
       </div>
     </section>

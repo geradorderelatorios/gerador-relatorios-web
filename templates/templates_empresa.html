@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="split">
+  <form class="panel form" method="post" enctype="multipart/form-data">
+    <div>
+      <p class="eyebrow">Personalização por cliente</p>
+      <h1>Templates da empresa</h1>
+      <p class="muted">Envie modelos DOCX usados exclusivamente nesta conta. Quando houver template ativo, ele substitui o modelo padrão no relatório gerado.</p>
+    </div>
+
+    <label>Tipo de documento *
+      <select name="tipo" required>
+        <option value="capa">Capa</option>
+        <option value="lp">Líquido Penetrante</option>
+        <option value="pm">Partículas Magnéticas</option>
+        <option value="us">Ultrassom</option>
+      </select>
+    </label>
+
+    <label>Nome interno *
+      <input name="nome" required placeholder="Ex.: Modelo padrão da minha empresa">
+    </label>
+
+    <label>Arquivo DOCX *
+      <input name="template_file" type="file" accept=".docx" required>
+    </label>
+
+    <button class="primary" type="submit">Salvar template</button>
+  </form>
+
+  <section class="panel">
+    <div class="section-title">
+      <h2>Templates cadastrados</h2>
+      <span>{{ templates|length }}</span>
+    </div>
+
+    {% if templates %}
+      <div class="client-list">
+        {% for template in templates %}
+          <div class="client-item">
+            <strong>{{ template.nome }}</strong>
+            <span>{{ template.tipo|upper }} | {{ "Ativo" if template.ativo else "Substituído" }}</span>
+            <small>{{ template.criado_em.strftime("%d/%m/%Y %H:%M") if template.criado_em else "" }}</small>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Nenhum template personalizado cadastrado.</p>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

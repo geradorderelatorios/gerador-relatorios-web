@@ -6,6 +6,7 @@ __pycache__/
 venv/
 env/
 web_uploads/
+organization_templates/
 output/
 RLMetais/
 *.log

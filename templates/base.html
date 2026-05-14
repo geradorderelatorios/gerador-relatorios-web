@@ -16,6 +16,7 @@
         <span>{{ g.organization_name }}</span>
         <a href="{{ url_for('clientes') }}">Clientes</a>
         <a href="{{ url_for('insumos') }}">Insumos</a>
+        <a href="{{ url_for('templates_empresa') }}">Templates</a>
         <a href="{{ url_for('emitir_relatorio') }}">Gerar Relatórios</a>
         <form method="post" action="{{ url_for('logout') }}">
           <button class="nav-button" type="submit">Sair</button>

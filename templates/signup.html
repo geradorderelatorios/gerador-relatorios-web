@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Criar conta - Gerador de Relatórios</title>
+  <style>
+    :root{--blue:#247cff;--blue2:#3442ff;--ink:#101426;--muted:#687086;--line:#d7ddea;font-family:Inter,Arial,Helvetica,sans-serif}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 85% 12%,rgba(34,124,255,.55),transparent 34rem),radial-gradient(circle at 10% 100%,rgba(49,59,255,.45),transparent 32rem),#030b22;display:grid;place-items:center;padding:34px;color:white}
+    .shell{width:min(1180px,100%);display:grid;grid-template-columns:.9fr 1fr;border:1px solid rgba(255,255,255,.22);border-radius:30px;overflow:hidden;box-shadow:0 36px 110px rgba(0,0,0,.42)}
+    .side{background:linear-gradient(145deg,#07185b 0%,#03113c 52%,#02091f 100%);padding:72px;display:grid;align-content:center;gap:24px}.side h1{font-size:54px;line-height:1;margin:0}.side h1 span{color:var(--blue)}.side p{color:#c6d4f4;font-size:20px;line-height:1.5;margin:0}
+    .card{background:white;color:var(--ink);padding:64px;display:grid;align-content:center}.card form{display:grid;gap:18px;max-width:520px;width:100%;margin:auto}.eyebrow{color:var(--blue);font-size:13px;font-weight:800;text-transform:uppercase}.card h2{font-size:34px;margin:0 0 4px}.muted{color:var(--muted);line-height:1.5;margin:0 0 10px}
+    label{display:grid;gap:8px;font-weight:700}input{border:1px solid var(--line);border-radius:14px;font:inherit;min-height:58px;padding:0 18px}input:focus{border-color:#85b5ff;box-shadow:0 0 0 4px rgba(36,124,255,.12);outline:0}
+    button{background:linear-gradient(90deg,#2186ff,#343eff);border:0;border-radius:14px;color:white;cursor:pointer;font:inherit;font-size:18px;font-weight:800;min-height:60px}.links{text-align:center;color:var(--muted)}.links a{color:#1c62ff;font-weight:800;text-decoration:none}
+    @media(max-width:900px){body{padding:0}.shell{border-radius:0;grid-template-columns:1fr;min-height:100vh}.side{display:none}.card{padding:34px 22px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="side">
+      <h1>Comece a gerar <span>relatórios</span> profissionais</h1>
+      <p>Crie sua empresa, acesse sua área exclusiva e personalize seus dados e templates de END.</p>
+    </section>
+    <section class="card">
+      <form method="post">
+        <div>
+          <p class="eyebrow">Nova empresa</p>
+          <h2>Criar conta</h2>
+          <p class="muted">Cada empresa possui usuários, clientes, insumos e relatórios isolados.</p>
+        </div>
+        <label>Empresa<input name="organization_name" required autofocus></label>
+        <label>Seu nome<input name="name" required></label>
+        <label>E-mail<input name="email" type="email" required></label>
+        <label>Senha<input name="password" type="password" minlength="6" required></label>
+        <button type="submit">Criar minha conta</button>
+        <p class="links">Já tem conta? <a href="{{ url_for('login') }}">Entrar</a></p>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

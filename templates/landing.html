@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerador de Relatórios para END</title>
+  <style>
+    :root{--blue:#0057b8;--blue2:#247cff;--ink:#111827;--muted:#647084;--line:#dbe2ee;--bg:#f5f7fb;font-family:Inter,Arial,Helvetica,sans-serif}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff 0%,var(--bg) 48%,#fff 100%);color:var(--ink)}a{text-decoration:none}
+    .nav{height:78px;display:flex;align-items:center;justify-content:space-between;max-width:1180px;margin:auto;padding:0 24px}.brand{font-weight:900;font-size:20px;color:var(--ink)}.nav-links{display:flex;align-items:center;gap:22px}.nav-links a{color:var(--ink);font-weight:700}.btn{border:1px solid var(--line);border-radius:12px;color:var(--ink);display:inline-flex;font-weight:800;min-height:46px;padding:13px 18px}.btn.primary{background:linear-gradient(90deg,#2186ff,#343eff);border:0;color:white}
+    .hero{max-width:1180px;margin:0 auto;padding:76px 24px 44px;display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}.eyebrow{color:var(--blue);font-size:13px;font-weight:900;text-transform:uppercase}.hero h1{font-size:64px;line-height:.98;letter-spacing:0;margin:12px 0 18px}.hero p{color:var(--muted);font-size:20px;line-height:1.55;max-width:680px}.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+    .showcase{background:radial-gradient(circle at 80% 10%,rgba(36,124,255,.5),transparent 18rem),linear-gradient(145deg,#07185b,#02091f);border-radius:28px;min-height:460px;padding:34px;color:white;box-shadow:0 30px 80px rgba(20,50,120,.24);position:relative;overflow:hidden}.showcase h3{font-size:28px}.report{position:absolute;right:36px;bottom:28px;width:330px;background:white;color:#14213d;border-radius:22px;padding:24px;transform:rotate(5deg);box-shadow:0 28px 60px rgba(0,0,0,.28)}.line{height:10px;border-radius:99px;background:#2b77ff;margin:14px 0}.line.two{width:72%;background:#7fb0ff}.line.three{width:54%;background:#bdd4ff}
+    .section{max-width:1180px;margin:auto;padding:52px 24px}.section h2{font-size:38px;margin:0 0 22px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 16px 36px rgba(15,23,42,.04)}.card strong{display:block;font-size:20px;margin-bottom:10px}.card p{color:var(--muted);line-height:1.5}
+    .cta{background:#07185b;color:white;border-radius:26px;padding:42px;display:flex;align-items:center;justify-content:space-between;gap:22px}.cta h2{margin:0}.cta p{color:#c6d4f4;margin:10px 0 0}
+    @media(max-width:900px){.hero,.grid{grid-template-columns:1fr}.hero h1{font-size:42px}.nav{height:auto;align-items:flex-start;flex-direction:column;gap:16px;padding:20px 24px}.nav-links{flex-wrap:wrap}.cta{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="{{ url_for('index') }}">Gerador de Relatórios</a>
+    <nav class="nav-links">
+      <a href="#recursos">Recursos</a>
+      <a href="#end">Para END</a>
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="btn primary" href="{{ url_for('signup') }}">Criar conta</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">SaaS para Ensaios Não Destrutivos</span>
+        <h1>Relatórios técnicos com padrão, velocidade e controle.</h1>
+        <p>Uma plataforma para prestadores de END cadastrarem clientes, insumos, templates e emitirem laudos profissionais em um único ambiente.</p>
+        <div class="actions">
+          <a class="btn primary" href="{{ url_for('signup') }}">Começar agora</a>
+          <a class="btn" href="{{ url_for('login') }}">Acessar minha área</a>
+        </div>
+      </div>
+      <div class="showcase">
+        <span class="eyebrow">Fluxo inteligente</span>
+        <h3>CAPA > LP > PM > US</h3>
+        <p>Gere laudos separados ou combinados, sempre respeitando os templates da empresa.</p>
+        <div class="report"><strong>Resumo Executivo</strong><div class="line"></div><div class="line two"></div><div class="line three"></div></div>
+      </div>
+    </section>
+    <section class="section" id="recursos">
+      <h2>Projetado para empresas de inspeção</h2>
+      <div class="grid">
+        <article class="card"><strong>Multiempresa</strong><p>Cada cliente acessa sua própria área, com dados isolados por organização.</p></article>
+        <article class="card"><strong>Templates personalizados</strong><p>Base preparada para variação de modelos e informações por empresa contratante.</p></article>
+        <article class="card"><strong>Operação em campo</strong><p>Cadastro de clientes, insumos, fotos e geração de relatórios em fluxo simples.</p></article>
+      </div>
+    </section>
+    <section class="section" id="end">
+      <div class="cta">
+        <div><h2>Administração central e clientes autônomos.</h2><p>Você mantém acesso master; cada empresa cria sua conta e gera seus próprios relatórios.</p></div>
+        <a class="btn primary" href="{{ url_for('signup') }}">Criar conta da empresa</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -87,6 +87,7 @@ def generate_end_combo_report(
     dados_pm: Optional[dict] = None,
     dados_us: Optional[dict] = None,
     foto_capa: Optional[str] = None,
+    template_paths: Optional[dict[str, str]] = None,
 ) -> tuple[str, Optional[str]]:
     """
     Gera um único DOCX + (opcionalmente) um PDF contendo:
@@ -111,6 +112,7 @@ def generate_end_combo_report(
     if not (incluir_lp or incluir_pm or incluir_us):
         raise ValueError("É necessário selecionar ao menos um tipo de ensaio (LP, PM ou US).")
 
+    template_paths = template_paths or {}
     output_dir = get_output_dir()
     os.makedirs(output_dir, exist_ok=True)
 
@@ -136,7 +138,7 @@ def generate_end_combo_report(
     if isinstance(data_insp, date):
         dados_capa["DATA_INSP_EXTENSO"] = date_por_extenso(data_insp)
 
-    capa_template = os.path.join(TEMPLATES_DIR, "CAPA_TEMPLATE.docx")
+    capa_template = template_paths.get("capa") or os.path.join(TEMPLATES_DIR, "CAPA_TEMPLATE.docx")
     # gera a capa também na pasta temporária
     capa_path = generate_capa_report(dados_capa, capa_template, tmp_dir)
 
@@ -145,7 +147,7 @@ def generate_end_combo_report(
 
     # LP
     if incluir_lp:
-        lp_template = os.path.join(TEMPLATES_DIR, "LP_TEMPLATE.docx")
+        lp_template = template_paths.get("lp") or os.path.join(TEMPLATES_DIR, "LP_TEMPLATE.docx")
         dados_lp_full = dict(dados_comuns)
         if dados_lp:
             dados_lp_full.update(dados_lp)
@@ -154,7 +156,7 @@ def generate_end_combo_report(
 
     # PM
     if incluir_pm:
-        pm_template = os.path.join(TEMPLATES_DIR, "PM_TEMPLATE.docx")
+        pm_template = template_paths.get("pm") or os.path.join(TEMPLATES_DIR, "PM_TEMPLATE.docx")
         dados_pm_full = dict(dados_comuns)
         if dados_pm:
             dados_pm_full.update(dados_pm)
@@ -163,7 +165,7 @@ def generate_end_combo_report(
 
     # US
     if incluir_us:
-        us_template = os.path.join(TEMPLATES_DIR, "US_TEMPLATE.docx")
+        us_template = template_paths.get("us") or os.path.join(TEMPLATES_DIR, "US_TEMPLATE.docx")
         dados_us_full = dict(dados_comuns)
         if dados_us:
             dados_us_full.update(dados_us)

@@ -111,6 +111,7 @@ class Organization(Base):
     clientes = relationship("Cliente", back_populates="organization")
     entradas_relatorio = relationship("EntradaRelatorio", back_populates="organization")
     insumos = relationship("Insumo", back_populates="organization")
+    templates = relationship("TemplateEmpresa", back_populates="organization")
 
     def __repr__(self) -> str:
         return f"<Organization(id={self.id}, nome='{self.nome}')>"
@@ -131,3 +132,20 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}')>"
+
+
+class TemplateEmpresa(Base):
+    __tablename__ = "templates_empresa"
+
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    tipo = Column(String, nullable=False)
+    nome = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    ativo = Column(Integer, nullable=False, default=1)
+    criado_em = Column(DateTime, default=datetime.now)
+
+    organization = relationship("Organization", back_populates="templates")
+
+    def __repr__(self) -> str:
+        return f"<TemplateEmpresa(id={self.id}, tipo='{self.tipo}', nome='{self.nome}')>"
