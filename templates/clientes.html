@@ -1,19 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="split">
+<div class="breadcrumb"><span>Clientes</span><span>›</span><strong>{{ "Alterar cliente" if selected else "Novo cliente" }}</strong></div>
+
+<section class="split client-layout">
   <form class="panel form" method="post" action="{{ url_for('salvar_cliente') }}" id="cliente-form">
-    <div class="section-title">
-      <h1>{{ "Alterar cliente" if selected else "Novo cliente" }}</h1>
-      {% if selected %}
-        <a href="{{ url_for('clientes') }}">Novo cadastro</a>
-      {% endif %}
-    </div>
+    <h1>{{ "Alterar cliente" if selected else "Novo cliente" }}</h1>
 
     <input type="hidden" name="cliente_id" value="{{ selected.id if selected else '' }}">
 
     <div class="grid two">
       <label>CNPJ
-        <input name="cnpj" id="cnpj" value="{{ selected.cnpj if selected else '' }}">
+        <input name="cnpj" id="cnpj" placeholder="__.___.___/____-__" value="{{ selected.cnpj if selected else '' }}">
       </label>
       <label>&nbsp;
         <button class="button" type="button" id="buscar-cnpj">Buscar CNPJ</button>
@@ -30,42 +27,41 @@
       <input name="ie" id="ie" value="{{ selected.ie if selected else '' }}">
     </label>
 
-    <div class="grid two">
+    <div class="grid client-address">
       <label>Rua
         <input name="rua" id="rua" value="{{ selected.rua if selected else '' }}">
-      </label>
-      <label>Número
-        <input name="numero" id="numero" value="{{ selected.numero if selected else '' }}">
-      </label>
-    </div>
-
-    <div class="grid three">
-      <label>Bairro
-        <input name="bairro" id="bairro" value="{{ selected.bairro if selected else '' }}">
       </label>
       <label>Cidade
         <input name="cidade" id="cidade" value="{{ selected.cidade if selected else '' }}">
       </label>
       <label>UF
-        <input name="uf" id="uf" maxlength="2" value="{{ selected.uf if selected else '' }}">
+        <select name="uf" id="uf">
+          <option value="">Selecione...</option>
+          {% for uf in ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"] %}
+            <option value="{{ uf }}" {% if selected and selected.uf == uf %}selected{% endif %}>{{ uf }}</option>
+          {% endfor %}
+        </select>
       </label>
     </div>
 
-    <div class="grid three">
+    <div class="grid client-contact">
       <label>CEP
         <input name="cep" id="cep" value="{{ selected.cep if selected else '' }}">
       </label>
       <label>DDD
-        <input name="ddd" id="ddd" value="{{ selected.ddd if selected else '' }}">
+        <input name="ddd" id="ddd" placeholder="(__)" value="{{ selected.ddd if selected else '' }}">
       </label>
       <label>Telefone
-        <input name="telefone" id="telefone" value="{{ selected.telefone if selected else '' }}">
+        <input name="telefone" id="telefone" placeholder="(__) _____-____" value="{{ selected.telefone if selected else '' }}">
       </label>
     </div>
 
     <label>E-mail
       <input name="email" id="email" type="email" value="{{ selected.email if selected else '' }}">
     </label>
+
+    <input name="numero" id="numero" type="hidden" value="{{ selected.numero if selected else '' }}">
+    <input name="bairro" id="bairro" type="hidden" value="{{ selected.bairro if selected else '' }}">
 
     <div class="actions">
       <button class="button primary" type="submit" name="action" value="save">Salvar</button>
@@ -76,7 +72,7 @@
     <p class="form-note" id="cnpj-status" hidden></p>
   </form>
 
-  <section class="panel client-panel">
+  <section class="panel empty-panel">
     <div class="section-title">
       <h2>Clientes cadastrados</h2>
       <span>{{ clientes|length }}</span>
@@ -93,6 +89,7 @@
       </div>
     {% else %}
       <p class="empty">Nenhum cliente cadastrado.</p>
+      <div class="empty-state"><div class="empty-illustration">☷</div></div>
     {% endif %}
   </section>
 </section>

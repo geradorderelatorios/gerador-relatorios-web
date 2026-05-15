@@ -1,48 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="home-shell">
-  <section class="home-hero">
-    <div class="home-copy">
-      <p class="eyebrow">Sistema de relatórios técnicos</p>
-      <h1>Emissão profissional de laudos RL Metais</h1>
-      <p>
-        Organize clientes, insumos e relatórios de ensaios em um fluxo único,
-        com capa padronizada e documentos prontos para entrega.
-      </p>
-      <div class="home-actions">
-        <a class="button primary large" href="{{ url_for('emitir_relatorio') }}">Gerar Relatórios</a>
-        <a class="button large" href="{{ url_for('clientes') }}">Gerenciar Clientes</a>
-      </div>
+<div class="breadcrumb"><span>Dashboard</span><span>›</span><strong>Visão geral</strong></div>
+
+<section class="panel">
+  <div class="page-head">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Acompanhe os principais atalhos da operação.</p>
     </div>
+  </div>
 
-    <aside class="hero-panel">
-      <span class="panel-kicker">Fluxo de emissão</span>
-      <div class="flow-line">
-        <strong>Capa</strong>
-        <span>LP</span>
-        <span>PM</span>
-        <span>US</span>
-      </div>
-      <p>Gere laudos separados ou combinados em um único arquivo, sempre com a capa oficial.</p>
-    </aside>
-  </section>
-
-  <section class="quick-grid">
-    <a class="quick-card" href="{{ url_for('clientes') }}">
+  <div class="dashboard-grid">
+    <a class="card panel dashboard-card" href="{{ url_for('emitir_relatorio') }}">
       <span>01</span>
-      <strong>Clientes</strong>
-      <small>Cadastre, consulte por CNPJ, altere ou remova empresas.</small>
+      <div><strong>Emitir relatórios</strong><small>Gerar laudos de LP, PM e Ultrassom.</small></div>
     </a>
-    <a class="quick-card" href="{{ url_for('insumos') }}">
+    <a class="card panel dashboard-card" href="{{ url_for('clientes') }}">
       <span>02</span>
-      <strong>Insumos</strong>
-      <small>Controle lotes, fabricação e validade dos materiais usados.</small>
+      <div><strong>Clientes</strong><small>{{ clientes_count }} cliente(s) cadastrado(s).</small></div>
     </a>
-    <a class="quick-card primary-card" href="{{ url_for('emitir_relatorio') }}">
+    <a class="card panel dashboard-card" href="{{ url_for('insumos') }}">
       <span>03</span>
-      <strong>Gerar Relatórios</strong>
-      <small>Selecione os ensaios e emita documentos completos.</small>
+      <div><strong>Insumos</strong><small>Gerenciar materiais e lotes.</small></div>
     </a>
-  </section>
+  </div>
 </section>
 {% endblock %}

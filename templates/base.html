@@ -3,29 +3,66 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RL Metais Relatórios</title>
+  <title>Gerador de Relatórios</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='web.css') }}">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="{{ url_for('index') }}">
-      <img src="{{ url_for('static', filename='rlmetais_logo.png') }}" alt="RL Metais">
-    </a>
-    <nav>
-      {% if g.user_id %}
-        <span>{{ g.organization_name }}</span>
-        <a href="{{ url_for('clientes') }}">Clientes</a>
-        <a href="{{ url_for('insumos') }}">Insumos</a>
-        <a href="{{ url_for('templates_empresa') }}">Templates</a>
-        <a href="{{ url_for('emitir_relatorio') }}">Gerar Relatórios</a>
-        <form method="post" action="{{ url_for('logout') }}">
-          <button class="nav-button" type="submit">Sair</button>
-        </form>
-      {% endif %}
-    </nav>
-  </header>
+  {% if g.user_id %}
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="app-logo" href="{{ url_for('dashboard') }}">
+          <span class="logo-icon"><span></span><span></span><span></span></span>
+          <span>Gerador<br><strong>de Relatórios</strong></span>
+        </a>
 
-  <main class="page">
+        <nav class="side-nav">
+          <a class="{{ 'active' if request.endpoint == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span class="nav-ico">⌂</span>Dashboard</a>
+          <a class="{{ 'active' if request.endpoint in ['emitir_relatorio', 'novo_relatorio'] else '' }}" href="{{ url_for('emitir_relatorio') }}"><span class="nav-ico">▣</span>Emitir relatórios</a>
+          <a href="#"><span class="nav-ico">▤</span>Relatórios emitidos</a>
+          <a class="{{ 'active' if request.endpoint == 'templates_empresa' else '' }}" href="{{ url_for('templates_empresa') }}"><span class="nav-ico">▧</span>Modelos de relatórios</a>
+          <a class="{{ 'active' if request.endpoint == 'insumos' else '' }}" href="{{ url_for('insumos') }}"><span class="nav-ico">▢</span>Insumos</a>
+          <a class="{{ 'active' if request.endpoint in ['clientes', 'editar_cliente', 'salvar_cliente'] else '' }}" href="{{ url_for('clientes') }}"><span class="nav-ico">♙</span>Clientes</a>
+          <a href="#"><span class="nav-ico">♧</span>Usuários</a>
+          <a href="#"><span class="nav-ico">⚙</span>Configurações</a>
+        </nav>
+
+        <div class="help-card">
+          <span class="help-icon">?</span>
+          <strong>Precisa de ajuda?</strong>
+          <p>Acesse nossa central<br>de ajuda e tutoriais.</p>
+          <a href="#">Ir para central ↗</a>
+        </div>
+
+        <form class="sidebar-user" method="post" action="{{ url_for('logout') }}">
+          <span class="avatar">{{ (g.user_name or 'Ana Martins')[:2].upper() }}</span>
+          <span>
+            <strong>{{ g.user_name or 'Ana Martins' }}</strong>
+            <small>{% if g.user_role == 'master' %}Administradora{% else %}Administradora{% endif %}</small>
+          </span>
+          <button type="submit" aria-label="Sair">⌄</button>
+        </form>
+      </aside>
+
+      <div class="workspace">
+        <header class="app-topbar">
+          <div></div>
+          <div class="top-actions">
+            <span class="top-icon">☾</span>
+            <span class="top-icon bell">♧<b>3</b></span>
+            <span class="avatar">{{ (g.user_name or 'Ana Martins')[:2].upper() }}</span>
+            <span class="top-user">
+              <strong>{{ g.user_name or 'Ana Martins' }}</strong>
+              <small>Administradora</small>
+            </span>
+            <span class="chevron">⌄</span>
+          </div>
+        </header>
+
+        <main class="page">
+  {% else %}
+    <main class="page public-page">
+  {% endif %}
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% set visible_messages = messages | rejectattr('0', 'equalto', 'success') | list %}
       {% if visible_messages %}
@@ -38,5 +75,10 @@
     {% endwith %}
     {% block content %}{% endblock %}
   </main>
+
+  {% if g.user_id %}
+      </div>
+    </div>
+  {% endif %}
 </body>
 </html>

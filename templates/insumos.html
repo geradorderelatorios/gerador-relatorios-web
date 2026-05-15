@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="breadcrumb"><span>Insumos</span><span>›</span><strong>Cadastro de insumos</strong></div>
+
 <section class="split">
   <form class="panel form" method="post">
     <h1>Cadastro de insumos</h1>
     <label>Tipo *
       <select name="tipo" required>
+        <option value="">Selecione o tipo</option>
         <option value="penetrante">Líquido penetrante</option>
         <option value="revelador">Revelador</option>
         <option value="particula">Partícula magnética</option>
@@ -24,11 +27,14 @@
     <label>Penetrante / Revelador / Partícula - lote
       <input name="lote">
     </label>
-    <button class="button primary" type="submit">Salvar insumo</button>
+    <button class="submit-wide" type="submit">Salvar insumo</button>
   </form>
 
-  <section class="panel">
-    <h2>Insumos cadastrados</h2>
+  <section class="panel empty-panel">
+    <div class="section-title">
+      <h2>Insumos cadastrados</h2>
+      <span>{{ insumos|length }}</span>
+    </div>
     {% if insumos %}
       <div class="list">
         {% for insumo in insumos %}
@@ -43,6 +49,7 @@
       </div>
     {% else %}
       <p class="empty">Nenhum insumo cadastrado.</p>
+      <div class="empty-state"><div class="empty-illustration">▣</div></div>
     {% endif %}
   </section>
 </section>

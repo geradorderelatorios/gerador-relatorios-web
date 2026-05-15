@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="breadcrumb"><span>Modelos de relatórios</span><span>›</span><strong>Templates</strong></div>
+
 <section class="split">
   <form class="panel form" method="post" enctype="multipart/form-data">
-    <div>
-      <p class="eyebrow">Personalização por cliente</p>
-      <h1>Templates da empresa</h1>
-      <p class="muted">Envie modelos DOCX usados exclusivamente nesta conta. Quando houver template ativo, ele substitui o modelo padrão no relatório gerado.</p>
-    </div>
-
+    <h1>Modelos de relatórios</h1>
     <label>Tipo de documento *
       <select name="tipo" required>
         <option value="capa">Capa</option>
@@ -18,17 +15,17 @@
     </label>
 
     <label>Nome interno *
-      <input name="nome" required placeholder="Ex.: Modelo padrão da minha empresa">
+      <input name="nome" required placeholder="Ex.: Modelo padrão">
     </label>
 
     <label>Arquivo DOCX *
       <input name="template_file" type="file" accept=".docx" required>
     </label>
 
-    <button class="primary" type="submit">Salvar template</button>
+    <button class="submit-wide" type="submit">Salvar template</button>
   </form>
 
-  <section class="panel">
+  <section class="panel empty-panel">
     <div class="section-title">
       <h2>Templates cadastrados</h2>
       <span>{{ templates|length }}</span>
@@ -46,6 +43,7 @@
       </div>
     {% else %}
       <p class="empty">Nenhum template personalizado cadastrado.</p>
+      <div class="empty-state"><div class="empty-illustration">▧</div></div>
     {% endif %}
   </section>
 </section>

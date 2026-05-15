@@ -1,133 +1,150 @@
 {% extends "base.html" %}
 {% block content %}
-<form class="panel form" method="post" enctype="multipart/form-data">
-  <div class="section-title">
-    <h1>Emitir relatórios</h1>
-    <a href="{{ url_for('insumos') }}">Cadastrar insumos</a>
+<div class="breadcrumb"><span>Relatórios</span><span>›</span><strong>Emitir relatórios</strong></div>
+
+<form class="panel form form-card" method="post" enctype="multipart/form-data">
+  <div class="page-head">
+    <div>
+      <h1>Emitir relatórios</h1>
+      <p>Preencha as informações abaixo para gerar seu relatório.</p>
+    </div>
+    <a class="pill-action" href="{{ url_for('insumos') }}">Cadastrar insumos <span>+</span></a>
   </div>
 
-  <div class="grid three">
+  <div class="report-options">
     <label class="check-option">
-      <input name="incluir_lp" type="checkbox" value="1" {% if default_report == 'lp' %}checked{% endif %}>
-      Gerar Relatório de Líquidos Penetrantes
+      <input name="incluir_lp" type="checkbox" value="1" checked>
+      <span class="option-icon">◊</span>
+      <span>Gerar Relatório de<br>Líquidos Penetrantes</span>
     </label>
     <label class="check-option">
-      <input name="incluir_pm" type="checkbox" value="1" {% if default_report == 'pm' %}checked{% endif %}>
-      Gerar Relatório de Partículas Magnéticas
+      <input name="incluir_pm" type="checkbox" value="1">
+      <span class="option-icon">ↄ</span>
+      <span>Gerar Relatório de<br>Partículas Magnéticas</span>
     </label>
     <label class="check-option">
-      <input name="incluir_us" type="checkbox" value="1" {% if default_report == 'us' %}checked{% endif %}>
-      Gerar Relatório de Ultrassom
+      <input name="incluir_us" type="checkbox" value="1">
+      <span class="option-icon">)))</span>
+      <span>Gerar Relatório de<br>Ultrassom</span>
     </label>
   </div>
 
   <div class="grid two">
     <label>Formato de saída
-      <select name="output_mode">
-        <option value="unico">Gerar todos em um único arquivo</option>
-        <option value="separados">Gerar laudos separados</option>
-      </select>
+      <span class="input-icon"><span>▧</span>
+        <select name="output_mode">
+          <option value="unico">Gerar todos em um único arquivo</option>
+          <option value="separados">Gerar laudos separados</option>
+        </select>
+      </span>
     </label>
     <label>Cliente *
-      <select name="cliente_id" required>
-        <option value="">Selecione...</option>
-        {% for cliente in clientes %}
-          <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
-        {% endfor %}
-      </select>
+      <span class="input-icon"><span>♙</span>
+        <select name="cliente_id" required>
+          <option value="">Selecione...</option>
+          {% for cliente in clientes %}
+            <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
+          {% endfor %}
+        </select>
+      </span>
     </label>
   </div>
 
-  <div class="grid three">
+  <div class="grid report-top">
     <label>Número do relatório *
-      <input name="NUMRELATORIO" required>
+      <span class="input-icon"><span>#</span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
     </label>
     <label>Data da inspeção
-      <input name="DATA_INSP" type="date" value="{{ today }}">
+      <span class="input-icon"><span>▣</span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
     </label>
     <label>Laudo
-      <select name="LAUDO">
-        <option value="A">Aprovado</option>
-        <option value="R">Reprovado</option>
-      </select>
+      <span class="input-icon"><span>♡</span>
+        <select name="LAUDO">
+          <option value="A">Aprovado</option>
+          <option value="R">Reprovado</option>
+        </select>
+      </span>
     </label>
   </div>
 
-  <div class="grid two">
+  <div class="grid report-data">
     <label>Peça inspecionada
-      <input name="PECA_INSP">
+      <input name="PECA_INSP" placeholder="Ex.: Eixo, Tubulação, Solda...">
     </label>
     <label>Número do desenho / OP
-      <input name="NUM_DESENHO">
+      <input name="NUM_DESENHO" placeholder="Ex.: 12345-OP-01">
     </label>
     <label>Quantidade
-      <input name="QUANTIDADE">
+      <input name="QUANTIDADE" placeholder="Ex.: 2 unidades">
     </label>
     <label>Local da inspeção
-      <input name="LOCAL_INSP">
+      <input name="LOCAL_INSP" placeholder="Ex.: Oficina, Campo, Fábrica...">
     </label>
     <label>Temperatura
-      <input name="TEMPERATURA">
+      <input name="TEMPERATURA" placeholder="Ex.: 25°C">
     </label>
     <label>Condição da superfície
-      <input name="COND_SUPERFICIAL">
+      <input name="COND_SUPERFICIAL" placeholder="Ex.: Limpa e seca">
     </label>
     <label>Material
-      <input name="MATERIAL">
+      <input name="MATERIAL" placeholder="Ex.: Aço Carbono, Inox...">
     </label>
     <label>Região inspecionada
-      <input name="REGIAO_INSP">
+      <input name="REGIAO_INSP" placeholder="Ex.: Solda longitudinal">
     </label>
     <label>Espessura
-      <input name="ESPESSURA">
+      <input name="ESPESSURA" placeholder="Ex.: 12,5 mm">
     </label>
   </div>
 
-  <section class="subsection">
-    <h2>Insumos</h2>
-    <div class="grid three">
-      <label>Líquido penetrante
+  <div class="section-line"><h2>Insumos</h2></div>
+  <div class="grid three">
+    <label>Líquido penetrante
+      <span class="input-icon"><span>◊</span>
         <select name="penetrante_id">
           <option value="">Selecione...</option>
           {% for insumo in penetrantes %}
             <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
           {% endfor %}
         </select>
-      </label>
-      <label>Revelador
+      </span>
+    </label>
+    <label>Revelador
+      <span class="input-icon"><span>▦</span>
         <select name="revelador_id">
           <option value="">Selecione...</option>
           {% for insumo in reveladores %}
             <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
           {% endfor %}
         </select>
-      </label>
-      <label>Partícula magnética
+      </span>
+    </label>
+    <label>Partícula magnética
+      <span class="input-icon"><span>ↄ</span>
         <select name="particula_id">
           <option value="">Selecione...</option>
           {% for insumo in particulas %}
             <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
           {% endfor %}
         </select>
-      </label>
-    </div>
-  </section>
+      </span>
+    </label>
+  </div>
 
-  <section class="subsection">
-    <h2>Fotos</h2>
-    <div class="grid three">
-      <label>Foto 1 / capa
-        <input name="FOTO_1" type="file" accept="image/*">
-      </label>
-      <label>Foto 2
-        <input name="FOTO_2" type="file" accept="image/*">
-      </label>
-      <label>Foto 3
-        <input name="FOTO_3" type="file" accept="image/*">
-      </label>
-    </div>
-  </section>
+  <div class="section-line"><h2>Fotos</h2></div>
+  <div class="grid three">
+    <label>Foto 1 / capa
+      <input name="FOTO_1" type="file" accept="image/*">
+    </label>
+    <label>Foto 2
+      <input name="FOTO_2" type="file" accept="image/*">
+    </label>
+    <label>Foto 3
+      <input name="FOTO_3" type="file" accept="image/*">
+    </label>
+  </div>
+  <p class="empty">Formatos aceitos: JPG, PNG. Tamanho máximo: 10MB por arquivo.</p>
 
-  <button class="button primary" type="submit">Gerar relatório</button>
+  <button class="submit-wide" type="submit">▧ &nbsp; Gerar relatório</button>
 </form>
 {% endblock %}
