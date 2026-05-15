@@ -166,7 +166,7 @@ def _current_user(db_session):
 
 
 def _require_login():
-    open_routes = {"index", "login", "signup", "setup", "forgot_password", "oauth_google", "oauth_facebook", "static"}
+    open_routes = {"index", "login", "signup", "setup", "forgot_password", "oauth_google", "oauth_facebook", "oauth_apple", "static"}
     g.user_id = None
     g.organization_id = None
     g.user_name = ""
@@ -505,6 +505,12 @@ def oauth_google():
 @app.route("/auth/facebook")
 def oauth_facebook():
     flash("Login com Facebook ainda precisa ser configurado no provedor OAuth.", "error")
+    return redirect(url_for("login"))
+
+
+@app.route("/auth/apple")
+def oauth_apple():
+    flash("Login com Apple ainda precisa ser configurado no provedor OAuth.", "error")
     return redirect(url_for("login"))
 
 
