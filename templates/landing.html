@@ -3,58 +3,930 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gerador de Relatórios para END</title>
+  <title>Gerador de Relatórios</title>
   <style>
-    :root{--blue:#0057b8;--blue2:#247cff;--ink:#111827;--muted:#647084;--line:#dbe2ee;--bg:#f5f7fb;font-family:Inter,Arial,Helvetica,sans-serif}
-    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff 0%,var(--bg) 48%,#fff 100%);color:var(--ink)}a{text-decoration:none}
-    .nav{height:78px;display:flex;align-items:center;justify-content:space-between;max-width:1180px;margin:auto;padding:0 24px}.brand{font-weight:900;font-size:20px;color:var(--ink)}.nav-links{display:flex;align-items:center;gap:22px}.nav-links a{color:var(--ink);font-weight:700}.btn{border:1px solid var(--line);border-radius:12px;color:var(--ink);display:inline-flex;font-weight:800;min-height:46px;padding:13px 18px}.btn.primary{background:linear-gradient(90deg,#2186ff,#343eff);border:0;color:white}
-    .hero{max-width:1180px;margin:0 auto;padding:76px 24px 44px;display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}.eyebrow{color:var(--blue);font-size:13px;font-weight:900;text-transform:uppercase}.hero h1{font-size:64px;line-height:.98;letter-spacing:0;margin:12px 0 18px}.hero p{color:var(--muted);font-size:20px;line-height:1.55;max-width:680px}.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
-    .showcase{background:radial-gradient(circle at 80% 10%,rgba(36,124,255,.5),transparent 18rem),linear-gradient(145deg,#07185b,#02091f);border-radius:28px;min-height:460px;padding:34px;color:white;box-shadow:0 30px 80px rgba(20,50,120,.24);position:relative;overflow:hidden}.showcase h3{font-size:28px}.report{position:absolute;right:36px;bottom:28px;width:330px;background:white;color:#14213d;border-radius:22px;padding:24px;transform:rotate(5deg);box-shadow:0 28px 60px rgba(0,0,0,.28)}.line{height:10px;border-radius:99px;background:#2b77ff;margin:14px 0}.line.two{width:72%;background:#7fb0ff}.line.three{width:54%;background:#bdd4ff}
-    .section{max-width:1180px;margin:auto;padding:52px 24px}.section h2{font-size:38px;margin:0 0 22px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 16px 36px rgba(15,23,42,.04)}.card strong{display:block;font-size:20px;margin-bottom:10px}.card p{color:var(--muted);line-height:1.5}
-    .cta{background:#07185b;color:white;border-radius:26px;padding:42px;display:flex;align-items:center;justify-content:space-between;gap:22px}.cta h2{margin:0}.cta p{color:#c6d4f4;margin:10px 0 0}
-    @media(max-width:900px){.hero,.grid{grid-template-columns:1fr}.hero h1{font-size:42px}.nav{height:auto;align-items:flex-start;flex-direction:column;gap:16px;padding:20px 24px}.nav-links{flex-wrap:wrap}.cta{align-items:flex-start;flex-direction:column}}
+    :root {
+      --blue: #1557f2;
+      --blue-2: #256dff;
+      --navy: #061542;
+      --deep: #020a2d;
+      --text: #07143f;
+      --muted: #53648b;
+      --line: #e1e7f2;
+      --soft: #f7faff;
+      font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 84% 6%, rgba(37, 109, 255, .13), transparent 28rem),
+        radial-gradient(circle at 4% 18%, rgba(37, 109, 255, .07), transparent 24rem),
+        linear-gradient(180deg, #ffffff 0%, #f8fbff 48%, #ffffff 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .shell {
+      width: min(1310px, calc(100% - 56px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .brand strong {
+      color: var(--blue);
+      display: block;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 38px;
+      height: 48px;
+      border: 3px solid var(--blue);
+      border-radius: 5px;
+    }
+
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: -3px;
+      width: 15px;
+      height: 15px;
+      background: white;
+      border-left: 3px solid var(--blue);
+      border-bottom: 3px solid var(--blue);
+      border-radius: 0 0 0 4px;
+    }
+
+    .brand-mark span {
+      position: absolute;
+      bottom: 7px;
+      width: 5px;
+      border-radius: 3px 3px 0 0;
+      background: var(--blue);
+    }
+
+    .brand-mark span:nth-child(1) { left: 8px; height: 14px; }
+    .brand-mark span:nth-child(2) { left: 17px; height: 22px; }
+    .brand-mark span:nth-child(3) { left: 26px; height: 30px; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      margin-left: 50px;
+      color: #07143f;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: #07143f;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .btn {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      border: 1px solid #d9e1ef;
+      border-radius: 7px;
+      padding: 0 28px;
+      color: #07143f;
+      background: white;
+      box-shadow: 0 10px 24px rgba(12, 31, 84, .04);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .btn.primary {
+      min-width: 158px;
+      color: white;
+      border: 0;
+      background: linear-gradient(90deg, #1759f0, #174fe0);
+      box-shadow: 0 16px 34px rgba(21, 87, 242, .25);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 520px minmax(0, 1fr);
+      align-items: center;
+      gap: 54px;
+      padding: 70px 0 34px;
+    }
+
+    .badge {
+      width: max-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 26px;
+      padding: 0 13px;
+      border-radius: 999px;
+      color: var(--blue);
+      background: #edf3ff;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .badge::before {
+      content: "◉";
+      font-size: 10px;
+    }
+
+    h1 {
+      margin: 23px 0 24px;
+      color: var(--text);
+      font-size: 55px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    h1 span {
+      color: var(--blue);
+    }
+
+    .hero-copy p {
+      width: 545px;
+      max-width: 100%;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 34px;
+    }
+
+    .hero-actions .btn {
+      height: 54px;
+      min-width: 226px;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    .play {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--blue);
+      border-radius: 50%;
+      color: var(--blue);
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .checks {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      margin-top: 54px;
+      color: #40517a;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .checks span {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .checks i {
+      width: 16px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--blue);
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .divider {
+      width: 1px;
+      height: 16px;
+      background: #dbe3f0;
+    }
+
+    .dashboard-mock {
+      height: 488px;
+      display: grid;
+      grid-template-columns: 138px 1fr;
+      overflow: hidden;
+      border: 1px solid #dfe6f2;
+      border-radius: 15px;
+      background: white;
+      box-shadow: 0 30px 70px rgba(13, 29, 77, .13);
+    }
+
+    .mock-sidebar {
+      padding: 24px 20px;
+      color: #c9d5f2;
+      background: linear-gradient(160deg, #06194f, #020b2c);
+    }
+
+    .mock-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .mini-mark {
+      position: relative;
+      width: 22px;
+      height: 28px;
+      border: 2px solid #2d7cff;
+      border-radius: 4px;
+    }
+
+    .mini-mark span {
+      position: absolute;
+      bottom: 4px;
+      width: 3px;
+      background: #2d7cff;
+    }
+
+    .mini-mark span:nth-child(1) { left: 5px; height: 8px; }
+    .mini-mark span:nth-child(2) { left: 10px; height: 13px; }
+    .mini-mark span:nth-child(3) { left: 15px; height: 18px; }
+
+    .mock-nav {
+      display: grid;
+      gap: 8px;
+      margin-top: 36px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mock-nav span {
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 9px;
+      border-radius: 7px;
+    }
+
+    .mock-nav span:first-child {
+      color: white;
+      background: #1457e5;
+    }
+
+    .mock-help {
+      margin-top: 62px;
+      padding: 15px 12px;
+      border-radius: 9px;
+      background: rgba(24, 68, 151, .45);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .mock-help strong {
+      display: block;
+      margin-bottom: 9px;
+      color: white;
+    }
+
+    .mock-help a {
+      min-height: 28px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: white;
+      background: #1347c1;
+      font-weight: 900;
+    }
+
+    .mock-main {
+      padding: 22px 24px;
+      background: #fbfcff;
+    }
+
+    .mock-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .mock-title strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .mock-title small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .mock-date {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      color: #07143f;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .mock-date span:first-child {
+      padding: 7px 12px;
+      border: 1px solid #dfe6f2;
+      border-radius: 6px;
+      background: white;
+    }
+
+    .mock-avatar {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: #2b61ff;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      min-height: 84px;
+      padding: 15px 14px;
+      border: 1px solid #e4e9f3;
+      border-radius: 7px;
+      background: white;
+    }
+
+    .stat small {
+      display: block;
+      color: #1d2d59;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .stat strong {
+      display: block;
+      margin: 12px 0 8px;
+      color: #08153f;
+      font-size: 23px;
+      line-height: 1;
+    }
+
+    .stat em {
+      color: #10a86b;
+      font-style: normal;
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1.55fr .9fr;
+      gap: 14px;
+      margin-top: 15px;
+    }
+
+    .chart-card {
+      min-height: 154px;
+      padding: 14px;
+      border: 1px solid #e4e9f3;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      color: #1d2d59;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .line-chart {
+      position: relative;
+      height: 105px;
+      margin-top: 14px;
+      background:
+        linear-gradient(#e9eef8 1px, transparent 1px) 0 0 / 100% 25px,
+        linear-gradient(90deg, #eef2fb 1px, transparent 1px) 0 0 / 64px 100%;
+    }
+
+    .line-chart svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .donut-row {
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      align-items: center;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .donut {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: conic-gradient(#1b59ff 0 45%, #769dff 45% 75%, #b9ccff 75% 90%, #dce6ff 90% 100%);
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      color: #1d2d59;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .legend span {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .table-card {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #e4e9f3;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .table-card strong {
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 12px;
+      border-collapse: collapse;
+      color: #1d2d59;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    th {
+      color: #45557d;
+      text-align: left;
+      font-size: 9px;
+    }
+
+    td, th {
+      padding: 7px 6px;
+      border-bottom: 1px solid #edf1f7;
+    }
+
+    .tag {
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: #35568f;
+      font-size: 9px;
+    }
+
+    .done {
+      color: #0c8957;
+      background: #e8f8f1;
+    }
+
+    .logos {
+      margin-top: 38px;
+      padding: 24px 44px 28px;
+      border: 1px solid #e4e9f3;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .78);
+      box-shadow: 0 20px 48px rgba(13, 29, 77, .06);
+      text-align: center;
+    }
+
+    .logos p {
+      margin: 0 0 21px;
+      color: #2b3b6a;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .logo-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: center;
+      gap: 38px;
+      color: #67738e;
+    }
+
+    .partner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      filter: grayscale(1);
+      opacity: .9;
+      font-weight: 900;
+      line-height: 1.1;
+      text-align: left;
+    }
+
+    .partner i {
+      color: #637089;
+      font-size: 28px;
+      font-style: normal;
+    }
+
+    .partner small {
+      display: block;
+      font-size: 9px;
+      letter-spacing: .8px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 17px;
+      margin-top: 20px;
+    }
+
+    .feature {
+      min-height: 116px;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 20px;
+      align-items: center;
+      padding: 22px 28px;
+      border: 1px solid #e4e9f3;
+      border-radius: 11px;
+      background: white;
+      box-shadow: 0 16px 38px rgba(13, 29, 77, .06);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: linear-gradient(145deg, #1b72ff, #1445df);
+      font-size: 27px;
+      font-weight: 900;
+    }
+
+    .feature strong {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .feature p {
+      margin: 8px 0 0;
+      color: #40517a;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 600;
+    }
+
+    .bottom-cta {
+      min-height: 178px;
+      display: grid;
+      grid-template-columns: 330px 1fr 280px;
+      gap: 36px;
+      align-items: center;
+      margin: 20px 0 42px;
+      padding: 22px 56px;
+      border-radius: 13px;
+      color: white;
+      background:
+        radial-gradient(circle at 72% 20%, rgba(31, 112, 255, .65), transparent 26rem),
+        linear-gradient(145deg, #06195b, #020b2c 72%);
+      box-shadow: 0 22px 52px rgba(3, 15, 57, .18);
+      overflow: hidden;
+    }
+
+    .cta-visual {
+      position: relative;
+      height: 140px;
+    }
+
+    .paper {
+      position: absolute;
+      left: 92px;
+      top: 0;
+      width: 120px;
+      height: 140px;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, .24);
+    }
+
+    .paper span {
+      display: block;
+      height: 7px;
+      margin: 14px 18px;
+      border-radius: 99px;
+      background: #c6d6ff;
+    }
+
+    .paper span:nth-child(2) { width: 75%; }
+    .paper span:nth-child(3) { width: 60%; }
+    .paper::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 18px;
+      height: 48px;
+      background: linear-gradient(135deg, transparent 52%, rgba(21, 87, 242, .18) 52%), linear-gradient(#e9f0ff, #dce7ff);
+      border-radius: 8px;
+    }
+
+    .check-tile {
+      position: absolute;
+      right: 50px;
+      bottom: 8px;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: #1d66ff;
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .tiny-tile {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      color: #1b65ff;
+      background: rgba(23, 83, 210, .20);
+      font-size: 20px;
+    }
+
+    .tiny-tile.one { left: 10px; top: 28px; }
+    .tiny-tile.two { left: 26px; bottom: 10px; }
+    .tiny-tile.three { right: 0; top: 22px; }
+
+    .cta-copy h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.13;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    .cta-copy p {
+      margin: 20px 0 0;
+      color: #cbd8ff;
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .cta-action {
+      display: grid;
+      gap: 20px;
+      justify-items: center;
+    }
+
+    .cta-action .btn {
+      width: 220px;
+      height: 48px;
+      border-radius: 6px;
+      color: white;
+      border: 0;
+      background: linear-gradient(90deg, #1c71ff, #1457f2);
+    }
+
+    .cta-action small {
+      color: #cbd8ff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1050px) {
+      .shell { width: min(100% - 28px, 760px); }
+      .topbar { height: auto; padding: 22px 0; align-items: flex-start; gap: 22px; flex-direction: column; }
+      .nav, .top-actions { flex-wrap: wrap; gap: 18px; margin-left: 0; }
+      .hero, .bottom-cta { grid-template-columns: 1fr; }
+      .dashboard-mock { height: auto; min-height: 488px; }
+      .logos .logo-row, .features { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 42px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-actions, .checks { align-items: flex-start; flex-direction: column; }
+      .dashboard-mock { grid-template-columns: 1fr; }
+      .mock-sidebar { display: none; }
+      .stats, .charts, .logos .logo-row, .features { grid-template-columns: 1fr; }
+      .bottom-cta { padding: 28px; }
+    }
   </style>
 </head>
 <body>
-  <header class="nav">
-    <a class="brand" href="{{ url_for('index') }}">Gerador de Relatórios</a>
-    <nav class="nav-links">
+  <header class="topbar shell">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span>Gerador<strong>de Relatórios</strong></span>
+    </a>
+
+    <nav class="nav">
       <a href="#recursos">Recursos</a>
-      <a href="#end">Para END</a>
-      <a href="{{ url_for('login') }}">Entrar</a>
-      <a class="btn primary" href="{{ url_for('signup') }}">Criar conta</a>
+      <a href="#beneficios">Benefícios</a>
+      <a href="#funcionalidades">Funcionalidades</a>
+      <a href="#planos">Planos</a>
+      <a href="#depoimentos">Depoimentos</a>
+      <a href="#sobre">Sobre</a>
     </nav>
+
+    <div class="top-actions">
+      <a href="{{ url_for('login') }}">Entrar</a>
+      <a class="btn primary" href="{{ url_for('signup') }}">Criar conta grátis</a>
+    </div>
   </header>
-  <main>
+
+  <main class="shell">
     <section class="hero">
-      <div>
-        <span class="eyebrow">SaaS para Ensaios Não Destrutivos</span>
-        <h1>Relatórios técnicos com padrão, velocidade e controle.</h1>
-        <p>Uma plataforma para prestadores de END cadastrarem clientes, insumos, templates e emitirem laudos profissionais em um único ambiente.</p>
-        <div class="actions">
-          <a class="btn primary" href="{{ url_for('signup') }}">Começar agora</a>
-          <a class="btn" href="{{ url_for('login') }}">Acessar minha área</a>
+      <div class="hero-copy">
+        <span class="badge">Plataforma completa para relatórios</span>
+        <h1>Relatórios profissionais com mais <span>agilidade, padrão e precisão.</span></h1>
+        <p>Automatize a criação de relatórios, padronize informações e entregue análises confiáveis em poucos cliques.</p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="{{ url_for('signup') }}">Começar gratuitamente <span>→</span></a>
+          <a class="btn" href="{{ url_for('login') }}">Ver demonstração <span class="play">▶</span></a>
+        </div>
+
+        <div class="checks">
+          <span><i>✓</i>Sem cartão de crédito</span>
+          <span><i>✓</i>Configuração em minutos</span>
+          <span class="divider"></span>
+          <span><i>✓</i>Suporte especializado</span>
         </div>
       </div>
-      <div class="showcase">
-        <span class="eyebrow">Fluxo inteligente</span>
-        <h3>CAPA > LP > PM > US</h3>
-        <p>Gere laudos separados ou combinados, sempre respeitando os templates da empresa.</p>
-        <div class="report"><strong>Resumo Executivo</strong><div class="line"></div><div class="line two"></div><div class="line three"></div></div>
+
+      <div class="dashboard-mock">
+        <aside class="mock-sidebar">
+          <div class="mock-logo">
+            <span class="mini-mark"><span></span><span></span><span></span></span>
+            <span>Gerador<br>de Relatórios</span>
+          </div>
+          <nav class="mock-nav">
+            <span>⌂ Dashboard</span>
+            <span>▤ Relatórios</span>
+            <span>▧ Modelos</span>
+            <span>▥ Fontes de dados</span>
+            <span>◷ Agendamentos</span>
+            <span>♙ Clientes</span>
+            <span>♧ Usuários</span>
+            <span>⚙ Configurações</span>
+          </nav>
+          <div class="mock-help">
+            <strong>Precisa de ajuda?</strong>
+            Fale com nosso suporte especializado.
+            <a href="#">Abrir chat</a>
+          </div>
+        </aside>
+
+        <section class="mock-main">
+          <div class="mock-top">
+            <div class="mock-title"><strong>Dashboard</strong><small>Visão geral do seu ambiente</small></div>
+            <div class="mock-date"><span>01/05/2026 - 15/05/2026⌄</span><span>♧</span><span class="mock-avatar">AM</span></div>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><small>Relatórios gerados</small><strong>1.248</strong><em>+18% vs período anterior</em></div>
+            <div class="stat"><small>Modelos ativos</small><strong>86</strong><em>+7% vs período anterior</em></div>
+            <div class="stat"><small>Agendamentos</small><strong>24</strong><em>+11% vs período anterior</em></div>
+            <div class="stat"><small>Clientes ativos</small><strong>45</strong><em>+5% vs período anterior</em></div>
+          </div>
+
+          <div class="charts">
+            <div class="chart-card">
+              <div class="chart-head"><span>Relatórios gerados</span><span>Últimos 15 dias⌄</span></div>
+              <div class="line-chart">
+                <svg viewBox="0 0 420 118" preserveAspectRatio="none">
+                  <path d="M0 96 C18 66 38 70 58 54 S94 83 119 61 S162 35 197 51 S229 73 258 34 S303 40 332 54 S370 70 420 39" fill="none" stroke="#1557f2" stroke-width="4"/>
+                </svg>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><span>Tipos de relatórios</span></div>
+              <div class="donut-row">
+                <div class="donut"></div>
+                <div class="legend">
+                  <span>Operacionais <b>45%</b></span>
+                  <span>Gerenciais <b>30%</b></span>
+                  <span>Financeiros <b>15%</b></span>
+                  <span>Outros <b>10%</b></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <strong>Relatórios recentes</strong>
+            <table>
+              <thead><tr><th>Nome</th><th>Tipo</th><th>Cliente</th><th>Data</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Relatório de Ensaios - Maio/2026</td><td><span class="tag">Operacional</span></td><td>Empresa ABC</td><td>15/05/2026 10:30</td><td><span class="tag done">Concluído</span></td></tr>
+                <tr><td>Análise de Performance - Q2</td><td><span class="tag">Gerencial</span></td><td>Construtora XYZ</td><td>15/05/2026 09:15</td><td><span class="tag done">Concluído</span></td></tr>
+                <tr><td>Relatório Financeiro - Abril/2026</td><td><span class="tag">Financeiro</span></td><td>Indústria 123</td><td>14/05/2026 16:45</td><td><span class="tag done">Concluído</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </section>
-    <section class="section" id="recursos">
-      <h2>Projetado para empresas de inspeção</h2>
-      <div class="grid">
-        <article class="card"><strong>Multiempresa</strong><p>Cada cliente acessa sua própria área, com dados isolados por organização.</p></article>
-        <article class="card"><strong>Templates personalizados</strong><p>Base preparada para variação de modelos e informações por empresa contratante.</p></article>
-        <article class="card"><strong>Operação em campo</strong><p>Cadastro de clientes, insumos, fotos e geração de relatórios em fluxo simples.</p></article>
+
+    <section class="logos" id="recursos">
+      <p>Empresas que confiam na nossa plataforma</p>
+      <div class="logo-row">
+        <div class="partner"><i>◢</i><span>ConstrutorA<small>ENGENHARIA</small></span></div>
+        <div class="partner"><i>◈</i><span>ENGE<small>SOLUÇÕES</small></span></div>
+        <div class="partner"><i>♣</i><span>LABORATÓRIO<small>PRECISÃO</small></span></div>
+        <div class="partner"><i>◎</i><span>QUALITEST<small>CERTIFICAÇÕES</small></span></div>
+        <div class="partner"><i>▥</i><span>METROPOLE<small>CONSTRUTORA</small></span></div>
+        <div class="partner"><i>⌂</i><span>SÓLIDA<small>ENGENHARIA</small></span></div>
       </div>
     </section>
-    <section class="section" id="end">
-      <div class="cta">
-        <div><h2>Administração central e clientes autônomos.</h2><p>Você mantém acesso master; cada empresa cria sua conta e gera seus próprios relatórios.</p></div>
-        <a class="btn primary" href="{{ url_for('signup') }}">Criar conta da empresa</a>
+
+    <section class="features" id="beneficios">
+      <article class="feature"><span class="feature-icon">⚡</span><div><strong>Agilidade</strong><p>Gere relatórios em minutos e elimine tarefas manuais repetitivas.</p></div></article>
+      <article class="feature"><span class="feature-icon">♡</span><div><strong>Padronização</strong><p>Mantenha um padrão consistente em todos os relatórios da sua empresa.</p></div></article>
+      <article class="feature"><span class="feature-icon">▮</span><div><strong>Inteligência</strong><p>Visualize dados com clareza e tome decisões baseadas em informações confiáveis.</p></div></article>
+      <article class="feature"><span class="feature-icon">☁</span><div><strong>Segurança</strong><p>Seus dados protegidos com criptografia e controle de acessos avançado.</p></div></article>
+    </section>
+
+    <section class="bottom-cta" id="funcionalidades">
+      <div class="cta-visual">
+        <span class="tiny-tile one">◎</span>
+        <span class="tiny-tile two">♙</span>
+        <span class="tiny-tile three">▧</span>
+        <div class="paper"><span></span><span></span><span></span></div>
+        <span class="check-tile">✓</span>
+      </div>
+      <div class="cta-copy">
+        <h2>Do dados ao relatório final,<br>tudo em um só lugar.</h2>
+        <p>Conecte suas fontes de dados, utilize modelos inteligentes e gere relatórios profissionais prontos para compartilhar.</p>
+      </div>
+      <div class="cta-action">
+        <a class="btn" href="{{ url_for('signup') }}">Criar conta grátis <span>→</span></a>
+        <small>▣ Não é necessário cartão de crédito</small>
       </div>
     </section>
   </main>
