@@ -801,7 +801,10 @@ def novo_relatorio(report_key):
             numrel = request.form.get("NUMRELATORIO", "").strip()
             cliente_id = request.form.get("cliente_id")
 
-            if not numrel or not cliente_id:
+            if not numrel:
+                numrel = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+            if not cliente_id:
                 flash("Informe o número do relatório e o cliente.", "error")
                 return redirect(url_for("novo_relatorio", report_key=report_key))
 
@@ -894,8 +897,11 @@ def emitir_relatorio():
             cliente_id = request.form.get("cliente_id")
             selected = _selected_reports()
 
-            if not numrel or not cliente_id:
-                flash("Informe o número do relatório e o cliente.", "error")
+            if not numrel:
+                numrel = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+            if not cliente_id:
+                flash("Selecione o cliente antes de gerar o relatório.", "error")
                 return redirect(url_for("emitir_relatorio"))
             if not selected:
                 flash("Selecione ao menos um relatório para gerar.", "error")

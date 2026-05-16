@@ -586,6 +586,7 @@ input[type="file"]::file-selector-button {
 .shared-step[hidden],
 .report-step[hidden],
 .wizard-status[hidden],
+.wizard-error[hidden],
 .wizard-back[hidden] {
   display: none;
 }
@@ -599,6 +600,19 @@ input[type="file"]::file-selector-button {
   border-radius: 8px;
   color: #124bc9;
   background: #eff5ff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.wizard-error {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #ffd0d0;
+  border-radius: 8px;
+  color: #9f1d1d;
+  background: #fff3f3;
   font-size: 14px;
   font-weight: 900;
 }

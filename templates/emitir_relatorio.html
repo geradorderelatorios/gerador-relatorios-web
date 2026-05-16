@@ -30,6 +30,7 @@
   </div>
 
   <div class="wizard-status" id="wizard-status" hidden></div>
+  <div class="wizard-error" id="wizard-error" hidden></div>
 
   <section class="shared-step" id="shared-step">
     <div class="grid two">
@@ -54,8 +55,8 @@
     </div>
 
     <div class="grid report-top">
-      <label>Número do relatório *
-        <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
+      <label>Número do relatório
+        <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Opcional - se vazio, será gerado automaticamente"></span>
       </label>
       <label>Data da inspeção
         <span class="input-icon"><span><svg><use href="#icon-calendar"></use></svg></span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
@@ -195,6 +196,7 @@
   const reportForm = document.getElementById("report-form");
   const sharedStep = document.getElementById("shared-step");
   const statusBox = document.getElementById("wizard-status");
+  const errorBox = document.getElementById("wizard-error");
   const nextButton = document.getElementById("wizard-next");
   const backButton = document.getElementById("wizard-back");
   const reportSteps = [...document.querySelectorAll("[data-report-step]")];
@@ -211,6 +213,57 @@
     if (document.querySelector("[name='incluir_pm']")?.checked) reports.push("pm");
     if (document.querySelector("[name='incluir_us']")?.checked) reports.push("us");
     return reports;
+  }
+
+  function showWizardError(message) {
+    errorBox.hidden = false;
+    errorBox.textContent = message;
+    errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function clearWizardError() {
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+  }
+
+  function validateBeforeSubmit() {
+    const selected = selectedReports();
+    if (!selected.length) {
+      showWizardError("Selecione ao menos um relatório para gerar.");
+      return false;
+    }
+
+    const cliente = document.querySelector("[name='cliente_id']")?.value;
+    if (!cliente) {
+      currentStep = 0;
+      paintWizard();
+      showWizardError("Selecione o cliente antes de gerar o relatório.");
+      return false;
+    }
+
+    if (selected.includes("lp")) {
+      const penetrante = document.querySelector("[name='penetrante_id']")?.value;
+      const revelador = document.querySelector("[name='revelador_id']")?.value;
+      if (!penetrante || !revelador) {
+        currentStep = 0;
+        paintWizard();
+        showWizardError("Para Líquidos Penetrantes, selecione o líquido penetrante e o revelador.");
+        return false;
+      }
+    }
+
+    if (selected.includes("pm")) {
+      const particula = document.querySelector("[name='particula_id']")?.value;
+      if (!particula) {
+        currentStep = 0;
+        paintWizard();
+        showWizardError("Para Partículas Magnéticas, selecione a partícula magnética.");
+        return false;
+      }
+    }
+
+    clearWizardError();
+    return true;
   }
 
   function paintWizard() {
@@ -240,12 +293,13 @@
     event.preventDefault();
     const selected = selectedReports();
     if (selected.length > 1 && currentStep < selected.length - 1) {
+      if (currentStep === 0 && !validateBeforeSubmit()) return;
       currentStep += 1;
       paintWizard();
       reportForm.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
-    reportForm.requestSubmit();
+    if (validateBeforeSubmit()) reportForm.requestSubmit();
   });
 
   backButton.addEventListener("click", () => {
@@ -256,6 +310,7 @@
 
   document.querySelectorAll("[name^='incluir_']").forEach((field) => {
     field.addEventListener("change", () => {
+      clearWizardError();
       currentStep = 0;
       paintWizard();
     });
