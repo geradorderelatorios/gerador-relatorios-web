@@ -255,7 +255,12 @@ def _save_upload(report_num: str, field_name: str):
 def _json_ready(data: dict) -> dict:
     converted = {}
     for key, value in data.items():
-        converted[key] = value.isoformat() if isinstance(value, (date, datetime)) else value
+        if isinstance(value, (date, datetime)):
+            converted[key] = value.isoformat()
+        elif isinstance(value, dict):
+            converted[key] = _json_ready(value)
+        else:
+            converted[key] = value
     return converted
 
 
@@ -936,23 +941,30 @@ def emitir_relatorio():
                 particula_id=request.form.get("particula_id", ""),
             )
 
-            for photo_name in ["FOTO_1", "FOTO_2", "FOTO_3"]:
-                dados[photo_name] = _save_upload(numrel, photo_name)
+            dados["FOTO_1"] = _save_upload(numrel, "FOTO_1")
             dados.update(_cliente_mapping(cliente))
             template_paths = _active_template_paths(db_session, org_id)
+            dados_por_relatorio = {}
+            for report_key in selected:
+                report_data = dict(dados)
+                prefix = report_key.upper()
+                report_data["FOTO_2"] = _save_upload(numrel, f"{prefix}_FOTO_2")
+                report_data["FOTO_3"] = _save_upload(numrel, f"{prefix}_FOTO_3")
+                dados_por_relatorio[report_key] = report_data
 
             generated_paths = []
             if request.form.get("output_mode") == "separados":
                 for report_key in selected:
+                    report_data = dados_por_relatorio[report_key]
                     docx_path, _pdf_path = generate_end_combo_report(
-                        dados,
+                        report_data,
                         incluir_lp=report_key == "lp",
                         incluir_pm=report_key == "pm",
                         incluir_us=report_key == "us",
-                        dados_lp=dados,
-                        dados_pm=dados,
-                        dados_us=dados,
-                        foto_capa=dados.get("FOTO_1"),
+                        dados_lp=report_data,
+                        dados_pm=report_data,
+                        dados_us=report_data,
+                        foto_capa=report_data.get("FOTO_1"),
                         template_paths=template_paths,
                     )
                     final_path = os.path.splitext(docx_path)[0].replace("-END", f"-{REPORT_TYPES[report_key]['suffix']}") + ".docx"
@@ -966,9 +978,9 @@ def emitir_relatorio():
                     incluir_lp="lp" in selected,
                     incluir_pm="pm" in selected,
                     incluir_us="us" in selected,
-                    dados_lp=dados,
-                    dados_pm=dados,
-                    dados_us=dados,
+                    dados_lp=dados_por_relatorio.get("lp"),
+                    dados_pm=dados_por_relatorio.get("pm"),
+                    dados_us=dados_por_relatorio.get("us"),
                     foto_capa=dados.get("FOTO_1"),
                     template_paths=template_paths,
                 )
@@ -987,7 +999,7 @@ def emitir_relatorio():
                 tipo_relatorio_id=tipo.id,
                 relatorio_num=numrel,
                 titulo_personalizado=f"Relatório {numrel}",
-                dados_json=json.dumps(_json_ready(dados), ensure_ascii=False, indent=2),
+                dados_json=json.dumps(_json_ready({"comum": dados, "relatorios": dados_por_relatorio}), ensure_ascii=False, indent=2),
                 criado_em=datetime.now(),
                 caminho_arquivo_gerado=caminho_arquivo,
             )

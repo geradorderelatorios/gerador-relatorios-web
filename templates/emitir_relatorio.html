@@ -2,7 +2,7 @@
 {% block content %}
 <div class="breadcrumb"><span>Relatórios</span><span>›</span><strong>Emitir relatórios</strong></div>
 
-<form class="panel form form-card" method="post" enctype="multipart/form-data">
+<form class="panel form form-card report-wizard" method="post" enctype="multipart/form-data" id="report-form">
   <div class="page-head">
     <div>
       <h1>Emitir relatórios</h1>
@@ -29,122 +29,238 @@
     </label>
   </div>
 
-  <div class="grid two">
-    <label>Formato de saída
-      <span class="input-icon"><span><svg><use href="#icon-files"></use></svg></span>
-        <select name="output_mode">
-          <option value="unico">Gerar todos em um único arquivo</option>
-          <option value="separados">Gerar laudos separados</option>
-        </select>
-      </span>
-    </label>
-    <label>Cliente *
-      <span class="input-icon"><span><svg><use href="#icon-users"></use></svg></span>
-        <select name="cliente_id" required>
-          <option value="">Selecione...</option>
-          {% for cliente in clientes %}
-            <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
-          {% endfor %}
-        </select>
-      </span>
-    </label>
-  </div>
+  <div class="wizard-status" id="wizard-status" hidden></div>
 
-  <div class="grid report-top">
-    <label>Número do relatório *
-      <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
-    </label>
-    <label>Data da inspeção
-      <span class="input-icon"><span><svg><use href="#icon-calendar"></use></svg></span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
-    </label>
-    <label>Laudo
-      <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
-        <select name="LAUDO">
-          <option value="A">Aprovado</option>
-          <option value="R">Reprovado</option>
-        </select>
-      </span>
-    </label>
-  </div>
+  <section class="shared-step" id="shared-step">
+    <div class="grid two">
+      <label>Formato de saída
+        <span class="input-icon"><span><svg><use href="#icon-files"></use></svg></span>
+          <select name="output_mode">
+            <option value="unico">Gerar todos em um único arquivo</option>
+            <option value="separados">Gerar laudos separados</option>
+          </select>
+        </span>
+      </label>
+      <label>Cliente *
+        <span class="input-icon"><span><svg><use href="#icon-users"></use></svg></span>
+          <select name="cliente_id" required>
+            <option value="">Selecione...</option>
+            {% for cliente in clientes %}
+              <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+    </div>
 
-  <div class="grid report-data">
-    <label>Peça inspecionada
-      <input name="PECA_INSP" placeholder="Ex.: Eixo, Tubulação, Solda...">
-    </label>
-    <label>Número do desenho / OP
-      <input name="NUM_DESENHO" placeholder="Ex.: 12345-OP-01">
-    </label>
-    <label>Quantidade
-      <input name="QUANTIDADE" placeholder="Ex.: 2 unidades">
-    </label>
-    <label>Local da inspeção
-      <input name="LOCAL_INSP" placeholder="Ex.: Oficina, Campo, Fábrica...">
-    </label>
-    <label>Temperatura
-      <input name="TEMPERATURA" placeholder="Ex.: 25°C">
-    </label>
-    <label>Condição da superfície
-      <input name="COND_SUPERFICIAL" placeholder="Ex.: Limpa e seca">
-    </label>
-    <label>Material
-      <input name="MATERIAL" placeholder="Ex.: Aço Carbono, Inox...">
-    </label>
-    <label>Região inspecionada
-      <input name="REGIAO_INSP" placeholder="Ex.: Solda longitudinal">
-    </label>
-    <label>Espessura
-      <input name="ESPESSURA" placeholder="Ex.: 12,5 mm">
-    </label>
-  </div>
+    <div class="grid report-top">
+      <label>Número do relatório *
+        <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
+      </label>
+      <label>Data da inspeção
+        <span class="input-icon"><span><svg><use href="#icon-calendar"></use></svg></span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
+      </label>
+      <label>Laudo
+        <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
+          <select name="LAUDO">
+            <option value="A">Aprovado</option>
+            <option value="R">Reprovado</option>
+          </select>
+        </span>
+      </label>
+    </div>
 
-  <div class="section-line"><h2>Insumos</h2></div>
-  <div class="grid three">
-    <label>Líquido penetrante
-      <span class="input-icon"><span><svg><use href="#icon-droplet"></use></svg></span>
-        <select name="penetrante_id">
-          <option value="">Selecione...</option>
-          {% for insumo in penetrantes %}
-            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
-          {% endfor %}
-        </select>
-      </span>
-    </label>
-    <label>Revelador
-      <span class="input-icon"><span><svg><use href="#icon-box"></use></svg></span>
-        <select name="revelador_id">
-          <option value="">Selecione...</option>
-          {% for insumo in reveladores %}
-            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
-          {% endfor %}
-        </select>
-      </span>
-    </label>
-    <label>Partícula magnética
-      <span class="input-icon"><span><svg><use href="#icon-magnet"></use></svg></span>
-        <select name="particula_id">
-          <option value="">Selecione...</option>
-          {% for insumo in particulas %}
-            <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
-          {% endfor %}
-        </select>
-      </span>
-    </label>
-  </div>
+    <div class="grid report-data">
+      <label>Peça inspecionada
+        <input name="PECA_INSP" placeholder="Ex.: Eixo, Tubulação, Solda...">
+      </label>
+      <label>Número do desenho / OP
+        <input name="NUM_DESENHO" placeholder="Ex.: 12345-OP-01">
+      </label>
+      <label>Quantidade
+        <input name="QUANTIDADE" placeholder="Ex.: 2 unidades">
+      </label>
+      <label>Local da inspeção
+        <input name="LOCAL_INSP" placeholder="Ex.: Oficina, Campo, Fábrica...">
+      </label>
+      <label>Temperatura
+        <input name="TEMPERATURA" placeholder="Ex.: 25°C">
+      </label>
+      <label>Condição da superfície
+        <input name="COND_SUPERFICIAL" placeholder="Ex.: Limpa e seca">
+      </label>
+    </div>
 
-  <div class="section-line"><h2>Fotos</h2></div>
-  <div class="grid three">
-    <label>Foto 1 / capa
-      <input name="FOTO_1" type="file" accept="image/*">
-    </label>
-    <label>Foto 2
-      <input name="FOTO_2" type="file" accept="image/*">
-    </label>
-    <label>Foto 3
-      <input name="FOTO_3" type="file" accept="image/*">
-    </label>
-  </div>
+    <div class="section-line"><h2>Insumos</h2></div>
+    <div class="grid three">
+      <label>Líquido penetrante
+        <span class="input-icon"><span><svg><use href="#icon-droplet"></use></svg></span>
+          <select name="penetrante_id">
+            <option value="">Selecione...</option>
+            {% for insumo in penetrantes %}
+              <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+      <label>Revelador
+        <span class="input-icon"><span><svg><use href="#icon-box"></use></svg></span>
+          <select name="revelador_id">
+            <option value="">Selecione...</option>
+            {% for insumo in reveladores %}
+              <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+      <label>Partícula magnética
+        <span class="input-icon"><span><svg><use href="#icon-magnet"></use></svg></span>
+          <select name="particula_id">
+            <option value="">Selecione...</option>
+            {% for insumo in particulas %}
+              <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      </label>
+    </div>
+
+    <div class="section-line"><h2>Foto da capa</h2></div>
+    <div class="grid three cover-photo-grid">
+      <label>Foto 1 / capa
+        <input name="FOTO_1" type="file" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <section class="report-step" data-report-step="lp">
+    <div class="section-line"><h2>Líquidos Penetrantes</h2></div>
+    <p class="empty">A foto da capa será herdada. Envie apenas as fotos específicas deste relatório.</p>
+    <div class="grid two">
+      <label>Foto 2 - Líquidos Penetrantes
+        <input name="LP_FOTO_2" type="file" accept="image/*">
+      </label>
+      <label>Foto 3 - Líquidos Penetrantes
+        <input name="LP_FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <section class="report-step" data-report-step="pm">
+    <div class="section-line"><h2>Partículas Magnéticas</h2></div>
+    <p class="empty">A foto da capa será herdada. Envie apenas as fotos específicas deste relatório.</p>
+    <div class="grid two">
+      <label>Foto 2 - Partículas Magnéticas
+        <input name="PM_FOTO_2" type="file" accept="image/*">
+      </label>
+      <label>Foto 3 - Partículas Magnéticas
+        <input name="PM_FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+  </section>
+
+  <section class="report-step" data-report-step="us">
+    <div class="section-line"><h2>Ultrassom</h2></div>
+    <p class="empty">A foto da capa será herdada. Preencha os campos próprios do ultrassom e envie as fotos deste relatório.</p>
+    <div class="grid three">
+      <label>Material
+        <input name="MATERIAL" placeholder="Ex.: Aço Carbono, Inox...">
+      </label>
+      <label>Região inspecionada
+        <input name="REGIAO_INSP" placeholder="Ex.: Solda longitudinal">
+      </label>
+      <label>Espessura
+        <input name="ESPESSURA" placeholder="Ex.: 12,5 mm">
+      </label>
+    </div>
+    <div class="grid two">
+      <label>Foto 2 - Ultrassom
+        <input name="US_FOTO_2" type="file" accept="image/*">
+      </label>
+      <label>Foto 3 - Ultrassom
+        <input name="US_FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+  </section>
+
   <p class="empty">Formatos aceitos: JPG, PNG. Tamanho máximo: 10MB por arquivo.</p>
 
-  <button class="submit-wide" type="submit">▧ &nbsp; Gerar relatório</button>
+  <div class="wizard-actions">
+    <button class="button wizard-back" type="button" id="wizard-back" hidden>Voltar</button>
+    <button class="submit-wide" type="button" id="wizard-next">Gerar relatório</button>
+  </div>
 </form>
+
+<script>
+  const reportForm = document.getElementById("report-form");
+  const sharedStep = document.getElementById("shared-step");
+  const statusBox = document.getElementById("wizard-status");
+  const nextButton = document.getElementById("wizard-next");
+  const backButton = document.getElementById("wizard-back");
+  const reportSteps = [...document.querySelectorAll("[data-report-step]")];
+  const reportLabels = {
+    lp: "Líquidos Penetrantes",
+    pm: "Partículas Magnéticas",
+    us: "Ultrassom",
+  };
+  let currentStep = 0;
+
+  function selectedReports() {
+    const reports = [];
+    if (document.querySelector("[name='incluir_lp']")?.checked) reports.push("lp");
+    if (document.querySelector("[name='incluir_pm']")?.checked) reports.push("pm");
+    if (document.querySelector("[name='incluir_us']")?.checked) reports.push("us");
+    return reports;
+  }
+
+  function paintWizard() {
+    const selected = selectedReports();
+    const lastIndex = Math.max(selected.length - 1, 0);
+    if (currentStep > lastIndex) currentStep = lastIndex;
+
+    const multiple = selected.length > 1;
+    const activeReport = selected[currentStep] || selected[0];
+
+    sharedStep.hidden = multiple && currentStep > 0;
+    reportSteps.forEach((step) => {
+      step.hidden = step.dataset.reportStep !== activeReport;
+    });
+
+    statusBox.hidden = !multiple;
+    if (multiple && activeReport) {
+      statusBox.textContent = `Relatório ${currentStep + 1} de ${selected.length}: ${reportLabels[activeReport]}`;
+    }
+
+    backButton.hidden = !multiple || currentStep === 0;
+    nextButton.type = multiple && currentStep < selected.length - 1 ? "button" : "submit";
+    nextButton.textContent = multiple && currentStep < selected.length - 1 ? "Próximo relatório" : "Gerar relatório";
+  }
+
+  nextButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    const selected = selectedReports();
+    if (selected.length > 1 && currentStep < selected.length - 1) {
+      currentStep += 1;
+      paintWizard();
+      reportForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    reportForm.requestSubmit();
+  });
+
+  backButton.addEventListener("click", () => {
+    currentStep = Math.max(currentStep - 1, 0);
+    paintWizard();
+    reportForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  document.querySelectorAll("[name^='incluir_']").forEach((field) => {
+    field.addEventListener("change", () => {
+      currentStep = 0;
+      paintWizard();
+    });
+  });
+
+  paintWizard();
+</script>
 {% endblock %}

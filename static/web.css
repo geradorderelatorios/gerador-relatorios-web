@@ -577,6 +577,47 @@ input[type="file"]::file-selector-button {
   box-shadow: 0 14px 28px rgba(20, 86, 229, .20);
 }
 
+.shared-step,
+.report-step {
+  display: grid;
+  gap: 19px;
+}
+
+.shared-step[hidden],
+.report-step[hidden],
+.wizard-status[hidden],
+.wizard-back[hidden] {
+  display: none;
+}
+
+.wizard-status {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #cfe0ff;
+  border-radius: 8px;
+  color: #124bc9;
+  background: #eff5ff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.wizard-actions {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.wizard-actions .submit-wide {
+  min-width: 0;
+}
+
+.wizard-actions .wizard-back[hidden] + .submit-wide {
+  grid-column: 1 / -1;
+}
+
 .button,
 button {
   cursor: pointer;
