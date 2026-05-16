@@ -24,6 +24,20 @@ def generate_lp_report(dados: dict, template_path: str, output_dir: str) -> str:
 
     os.makedirs(output_dir, exist_ok=True)
 
+    if dados.get("LAUDO") == "A":
+        dados["TIPO_DESC"] = "Isento"
+        dados["LOC_DESC"] = "Isento"
+        dados["DIM_DESC"] = "Isento"
+    else:
+        dados.setdefault("TIPO_DESC", dados.get("LP_TIPO_DESC", ""))
+        dados.setdefault("LOC_DESC", dados.get("LP_LOC_DESC", ""))
+        dados.setdefault("DIM_DESC", dados.get("LP_DIM_DESC", ""))
+    dados["LP_TIPO_DESC"] = dados["TIPO_DESC"]
+    dados["LP_LOC_DESC"] = dados["LOC_DESC"]
+    dados["LP_DIM_DESC"] = dados["DIM_DESC"]
+    dados["LP_LAUDO"] = dados.get("LAUDO", "")
+    dados["LP_LAUDO_EXTENSO"] = dados.get("LAUDO_EXTENSO", "")
+
     doc = Document(template_path)
 
     # ----------------------------------------------------

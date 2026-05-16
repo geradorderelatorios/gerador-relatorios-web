@@ -163,6 +163,7 @@ def _run_sqlite_light_migrations() -> None:
     """Adiciona colunas novas no SQLite local usado pelo MVP web."""
     inspector = inspect(Engine)
     table_names = set(inspector.get_table_names())
+    datetime_type = "DATETIME" if Engine.dialect.name == "sqlite" else "TIMESTAMP"
 
     with Engine.begin() as conn:
         if "clientes" in table_names:
@@ -174,3 +175,12 @@ def _run_sqlite_light_migrations() -> None:
             columns = {column["name"] for column in inspector.get_columns("entradas_relatorio")}
             if "organization_id" not in columns:
                 conn.execute(text("ALTER TABLE entradas_relatorio ADD COLUMN organization_id INTEGER"))
+
+        if "users" in table_names:
+            columns = {column["name"] for column in inspector.get_columns("users")}
+            if "is_active" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1"))
+            if "activation_token" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN activation_token VARCHAR"))
+            if "activated_at" not in columns:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN activated_at {datetime_type}"))

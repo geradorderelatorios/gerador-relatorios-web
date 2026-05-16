@@ -38,6 +38,20 @@ def _montar_mapping(dados: dict) -> dict:
     laudo_ext = dados_limpos.get("LAUDO_EXTENSO") or ""
 
     if laudo == "A":
+        dados_limpos["TIPO_DESC"] = "Isento"
+        dados_limpos["LOC_DESC"] = "Isento"
+        dados_limpos["DIM_DESC"] = "Isento"
+    else:
+        dados_limpos.setdefault("TIPO_DESC", dados_limpos.get("US_TIPO_DESC", ""))
+        dados_limpos.setdefault("LOC_DESC", dados_limpos.get("US_LOC_DESC", ""))
+        dados_limpos.setdefault("DIM_DESC", dados_limpos.get("US_DIM_DESC", ""))
+    dados_limpos["US_TIPO_DESC"] = dados_limpos["TIPO_DESC"]
+    dados_limpos["US_LOC_DESC"] = dados_limpos["LOC_DESC"]
+    dados_limpos["US_DIM_DESC"] = dados_limpos["DIM_DESC"]
+    dados_limpos["US_LAUDO"] = dados_limpos.get("LAUDO", "")
+    dados_limpos["US_LAUDO_EXTENSO"] = dados_limpos.get("LAUDO_EXTENSO", "")
+
+    if laudo == "A":
         conclusao = (
             "CONCLUSÃO: Não Foram evidenciadas indicações relevantes, "
             f"estando o ensaio {laudo_ext} segundo o critério de aceitação da norma acima"

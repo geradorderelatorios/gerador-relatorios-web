@@ -29,6 +29,20 @@ def generate_pm_report(dados: dict, template_path: str, output_dir: str) -> str:
 
     os.makedirs(output_dir, exist_ok=True)
 
+    if dados.get("LAUDO") == "A":
+        dados["TIPO_DESC"] = "Isento"
+        dados["LOC_DESC"] = "Isento"
+        dados["DIM_DESC"] = "Isento"
+    else:
+        dados.setdefault("TIPO_DESC", dados.get("PM_TIPO_DESC", ""))
+        dados.setdefault("LOC_DESC", dados.get("PM_LOC_DESC", ""))
+        dados.setdefault("DIM_DESC", dados.get("PM_DIM_DESC", ""))
+    dados["PM_TIPO_DESC"] = dados["TIPO_DESC"]
+    dados["PM_LOC_DESC"] = dados["LOC_DESC"]
+    dados["PM_DIM_DESC"] = dados["DIM_DESC"]
+    dados["PM_LAUDO"] = dados.get("LAUDO", "")
+    dados["PM_LAUDO_EXTENSO"] = dados.get("LAUDO_EXTENSO", "")
+
     doc = Document(template_path)
 
     # ---------------- TEXTO (sem fotos) ----------------

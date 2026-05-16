@@ -54,20 +54,12 @@
       </label>
     </div>
 
-    <div class="grid report-top">
+    <div class="grid two">
       <label>Número do relatório
         <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Opcional - se vazio, será gerado automaticamente"></span>
       </label>
       <label>Data da inspeção
         <span class="input-icon"><span><svg><use href="#icon-calendar"></use></svg></span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
-      </label>
-      <label>Laudo
-        <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
-          <select name="LAUDO">
-            <option value="A">Aprovado</option>
-            <option value="R">Reprovado</option>
-          </select>
-        </span>
       </label>
     </div>
 
@@ -145,6 +137,25 @@
         <input name="LP_FOTO_3" type="file" accept="image/*">
       </label>
     </div>
+    <div class="grid three indication-grid" data-indication-group="lp">
+      <label>Laudo - Líquidos Penetrantes
+        <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
+          <select name="LP_LAUDO" data-laudo-select="lp">
+            <option value="A">Aprovado</option>
+            <option value="R">Reprovado</option>
+          </select>
+        </span>
+      </label>
+      <label>Tipo de descontinuidade
+        <input name="LP_TIPO_DESC" data-indication-field="lp" placeholder="Isento">
+      </label>
+      <label>Localização
+        <input name="LP_LOC_DESC" data-indication-field="lp" placeholder="Isento">
+      </label>
+      <label>Dimensão
+        <input name="LP_DIM_DESC" data-indication-field="lp" placeholder="Isento">
+      </label>
+    </div>
   </section>
 
   <section class="report-step" data-report-step="pm">
@@ -156,6 +167,25 @@
       </label>
       <label>Foto 3 - Partículas Magnéticas
         <input name="PM_FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+    <div class="grid three indication-grid" data-indication-group="pm">
+      <label>Laudo - Partículas Magnéticas
+        <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
+          <select name="PM_LAUDO" data-laudo-select="pm">
+            <option value="A">Aprovado</option>
+            <option value="R">Reprovado</option>
+          </select>
+        </span>
+      </label>
+      <label>Tipo de descontinuidade
+        <input name="PM_TIPO_DESC" data-indication-field="pm" placeholder="Isento">
+      </label>
+      <label>Localização
+        <input name="PM_LOC_DESC" data-indication-field="pm" placeholder="Isento">
+      </label>
+      <label>Dimensão
+        <input name="PM_DIM_DESC" data-indication-field="pm" placeholder="Isento">
       </label>
     </div>
   </section>
@@ -180,6 +210,25 @@
       </label>
       <label>Foto 3 - Ultrassom
         <input name="US_FOTO_3" type="file" accept="image/*">
+      </label>
+    </div>
+    <div class="grid three indication-grid" data-indication-group="us">
+      <label>Laudo - Ultrassom
+        <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
+          <select name="US_LAUDO" data-laudo-select="us">
+            <option value="A">Aprovado</option>
+            <option value="R">Reprovado</option>
+          </select>
+        </span>
+      </label>
+      <label>Tipo de descontinuidade
+        <input name="US_TIPO_DESC" data-indication-field="us" placeholder="Isento">
+      </label>
+      <label>Localização
+        <input name="US_LOC_DESC" data-indication-field="us" placeholder="Isento">
+      </label>
+      <label>Dimensão
+        <input name="US_DIM_DESC" data-indication-field="us" placeholder="Isento">
       </label>
     </div>
   </section>
@@ -226,6 +275,23 @@
     errorBox.textContent = "";
   }
 
+  function syncIndicationFields(report) {
+    const laudo = document.querySelector(`[data-laudo-select="${report}"]`)?.value || "A";
+    document.querySelectorAll(`[data-indication-field="${report}"]`).forEach((field) => {
+      if (laudo === "A") {
+        field.value = "Isento";
+        field.readOnly = true;
+      } else {
+        if (field.value === "Isento") field.value = "";
+        field.readOnly = false;
+      }
+    });
+  }
+
+  function syncAllIndicationFields() {
+    ["lp", "pm", "us"].forEach(syncIndicationFields);
+  }
+
   function validateBeforeSubmit() {
     const selected = selectedReports();
     if (!selected.length) {
@@ -262,6 +328,20 @@
       }
     }
 
+    for (const report of selected) {
+      const laudo = document.querySelector(`[data-laudo-select="${report}"]`)?.value || "A";
+      if (laudo === "R") {
+        const missing = [...document.querySelectorAll(`[data-indication-field="${report}"]`)]
+          .some((field) => !field.value.trim());
+        if (missing) {
+          currentStep = selected.indexOf(report);
+          paintWizard();
+          showWizardError(`Preencha tipo, localização e dimensão da descontinuidade para ${reportLabels[report]}.`);
+          return false;
+        }
+      }
+    }
+
     clearWizardError();
     return true;
   }
@@ -287,6 +367,7 @@
     backButton.hidden = !multiple || currentStep === 0;
     nextButton.type = multiple && currentStep < selected.length - 1 ? "button" : "submit";
     nextButton.textContent = multiple && currentStep < selected.length - 1 ? "Próximo relatório" : "Gerar relatório";
+    syncAllIndicationFields();
   }
 
   nextButton.addEventListener("click", (event) => {
@@ -316,6 +397,11 @@
     });
   });
 
+  document.querySelectorAll("[data-laudo-select]").forEach((field) => {
+    field.addEventListener("change", () => syncIndicationFields(field.dataset.laudoSelect));
+  });
+
+  syncAllIndicationFields();
   paintWizard();
 </script>
 {% endblock %}

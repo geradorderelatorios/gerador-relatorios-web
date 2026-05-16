@@ -23,13 +23,15 @@
     <label>Contato
       <input name="contato" id="contato" value="{{ selected.contato if selected else '' }}">
     </label>
-    <label>Inscrição estadual
-      <input name="ie" id="ie" value="{{ selected.ie if selected else '' }}">
-    </label>
-
     <div class="grid client-address">
       <label>Rua
         <input name="rua" id="rua" value="{{ selected.rua if selected else '' }}">
+      </label>
+      <label>Número
+        <input name="numero" id="numero" value="{{ selected.numero if selected else '' }}">
+      </label>
+      <label>Bairro
+        <input name="bairro" id="bairro" value="{{ selected.bairro if selected else '' }}">
       </label>
       <label>Cidade
         <input name="cidade" id="cidade" value="{{ selected.cidade if selected else '' }}">
@@ -59,9 +61,6 @@
     <label>E-mail
       <input name="email" id="email" type="email" value="{{ selected.email if selected else '' }}">
     </label>
-
-    <input name="numero" id="numero" type="hidden" value="{{ selected.numero if selected else '' }}">
-    <input name="bairro" id="bairro" type="hidden" value="{{ selected.bairro if selected else '' }}">
 
     <div class="actions">
       <button class="button primary" type="submit" name="action" value="save">Salvar</button>

@@ -25,10 +25,22 @@
       <input name="DATA_INSP" type="date" value="{{ today }}">
     </label>
     <label>Laudo
-      <select name="LAUDO">
+      <select name="LAUDO" id="laudo">
         <option value="A">Aprovado</option>
         <option value="R">Reprovado</option>
       </select>
+    </label>
+  </div>
+
+  <div class="grid three">
+    <label>Tipo de descontinuidade
+      <input name="TIPO_DESC" data-indication-field placeholder="Isento">
+    </label>
+    <label>LocalizaÃ§Ã£o
+      <input name="LOC_DESC" data-indication-field placeholder="Isento">
+    </label>
+    <label>DimensÃ£o
+      <input name="DIM_DESC" data-indication-field placeholder="Isento">
     </label>
   </div>
 
@@ -56,9 +68,11 @@
 
   <div class="grid two">
     {% for field_name, label, field_type in config.fields %}
-      <label>{{ label }}
-        <input name="{{ field_name }}" type="{{ field_type }}">
-      </label>
+      {% if field_name not in ["TIPO_DESC", "LOC_DESC", "DIM_DESC"] %}
+        <label>{{ label }}
+          <input name="{{ field_name }}" type="{{ field_type }}">
+        </label>
+      {% endif %}
     {% endfor %}
   </div>
 
@@ -72,4 +86,24 @@
 
   <button class="button primary" type="submit">Gerar relatório</button>
 </form>
+<script>
+  const laudoField = document.getElementById("laudo");
+  const indicationFields = document.querySelectorAll("[data-indication-field]");
+
+  function syncIndicationFields() {
+    const approved = laudoField?.value !== "R";
+    indicationFields.forEach((field) => {
+      if (approved) {
+        field.value = "Isento";
+        field.readOnly = true;
+      } else {
+        if (field.value === "Isento") field.value = "";
+        field.readOnly = false;
+      }
+    });
+  }
+
+  laudoField?.addEventListener("change", syncIndicationFields);
+  syncIndicationFields();
+</script>
 {% endblock %}

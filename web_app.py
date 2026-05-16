@@ -2,11 +2,13 @@ import json
 import os
 import re
 import secrets
+import smtplib
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
 from datetime import date, datetime
+from email.message import EmailMessage
 
 from flask import Flask, flash, g, jsonify, redirect, render_template, request, send_file, session as browser_session, url_for
 from jinja2 import ChoiceLoader, DictLoader, FileSystemLoader
@@ -44,6 +46,9 @@ REPORT_TYPES = {
             ("LOCAL_INSP", "Local da inspeção", "text"),
             ("TEMPERATURA", "Temperatura", "text"),
             ("COND_SUPERFICIAL", "Condição da superfície", "text"),
+            ("TIPO_DESC", "Tipo de descontinuidade", "text"),
+            ("LOC_DESC", "Localização da descontinuidade", "text"),
+            ("DIM_DESC", "Dimensão da descontinuidade", "text"),
         ],
         "photos": ["FOTO_1", "FOTO_2", "FOTO_3"],
     },
@@ -63,6 +68,9 @@ REPORT_TYPES = {
             ("LOTE_PARTICULA", "Partícula - lote", "text"),
             ("TEMPERATURA", "Temperatura", "text"),
             ("COND_SUPERFICIAL", "Condição da superfície", "text"),
+            ("TIPO_DESC", "Tipo de descontinuidade", "text"),
+            ("LOC_DESC", "Localização da descontinuidade", "text"),
+            ("DIM_DESC", "Dimensão da descontinuidade", "text"),
         ],
         "photos": ["FOTO_1", "FOTO_2"],
     },
@@ -81,6 +89,9 @@ REPORT_TYPES = {
             ("COND_SUPERFICIAL", "Condição da superfície", "text"),
             ("REGIAO_INSP", "Região inspecionada", "text"),
             ("ESPESSURA", "Espessura", "text"),
+            ("TIPO_DESC", "Tipo de descontinuidade", "text"),
+            ("LOC_DESC", "Localização da descontinuidade", "text"),
+            ("DIM_DESC", "Dimensão da descontinuidade", "text"),
         ],
         "photos": ["FOTO_1", "FOTO_2", "FOTO_3"],
     },
@@ -144,7 +155,7 @@ FALLBACK_TEMPLATES = {
     "setup.html": """{% extends "base.html" %}{% block content %}<section class="auth panel"><form class="form" method="post"><div><p class="eyebrow">Primeiro acesso</p><h1>Criar empresa e usuário administrador</h1><p class="muted">Configure a conta principal para acessar o sistema de relatórios.</p></div><label>Empresa<input name="organization_name" required autofocus></label><label>Seu nome<input name="name" required></label><label>E-mail<input name="email" type="email" required></label><label>Senha<input name="password" type="password" minlength="6" required></label><button class="primary" type="submit">Criar acesso</button></form></section>{% endblock %}""",
     "login.html": """{% extends "base.html" %}{% block content %}<section class="auth panel"><form class="form" method="post"><div><p class="eyebrow">Acesso</p><h1>Entrar</h1></div><label>E-mail<input name="email" type="email" required autofocus></label><label>Senha<input name="password" type="password" required></label><button class="primary" type="submit">Entrar</button></form></section>{% endblock %}""",
     "index.html": """{% extends "base.html" %}{% block content %}<section class="home-hero"><div class="home-copy"><p class="eyebrow">Sistema de relatórios técnicos</p><h1>Emissão profissional de laudos RL Metais</h1><p>Organize clientes, insumos e relatórios de ensaios em um fluxo único, com capa padronizada e documentos prontos para entrega.</p><div class="home-actions"><a class="button primary" href="{{ url_for('emitir_relatorio') }}">Gerar Relatórios</a><a class="button" href="{{ url_for('clientes') }}">Gerenciar Clientes</a></div></div><aside class="hero-panel"><span class="eyebrow">Fluxo de emissão</span><div class="flow-line"><strong>Capa</strong><span>LP</span><span>PM</span><span>US</span></div><p>Gere laudos separados ou combinados em um único arquivo, sempre com a capa oficial.</p></aside></section><section class="quick-grid"><a class="quick-card" href="{{ url_for('clientes') }}"><span>01</span><strong>Clientes</strong><small>Cadastre, consulte por CNPJ, altere ou remova empresas.</small></a><a class="quick-card" href="{{ url_for('insumos') }}"><span>02</span><strong>Insumos</strong><small>Controle lotes, fabricação e validade dos materiais usados.</small></a><a class="quick-card" href="{{ url_for('emitir_relatorio') }}"><span>03</span><strong>Gerar Relatórios</strong><small>Selecione os ensaios e emita documentos completos.</small></a></section>{% endblock %}""",
-    "clientes.html": """{% extends "base.html" %}{% block content %}<section class="split"><form class="panel form" method="post" action="{{ url_for('salvar_cliente') }}"><div class="section-title"><h1>{{ "Alterar cliente" if selected else "Novo cliente" }}</h1>{% if selected %}<a href="{{ url_for('clientes') }}">Novo cadastro</a>{% endif %}</div><input type="hidden" name="cliente_id" value="{{ selected.id if selected else '' }}"><div class="grid two"><label>CNPJ<input name="cnpj" id="cnpj" value="{{ selected.cnpj if selected else '' }}"></label><label>&nbsp;<button class="button" type="button" id="buscar-cnpj">Buscar CNPJ</button></label></div><label>Razão social *<input name="razao_social" id="razao_social" required value="{{ selected.razao_social if selected else '' }}"></label><label>Contato<input name="contato" id="contato" value="{{ selected.contato if selected else '' }}"></label><label>Inscrição estadual<input name="ie" id="ie" value="{{ selected.ie if selected else '' }}"></label><div class="grid two"><label>Rua<input name="rua" id="rua" value="{{ selected.rua if selected else '' }}"></label><label>Número<input name="numero" id="numero" value="{{ selected.numero if selected else '' }}"></label></div><div class="grid three"><label>Bairro<input name="bairro" id="bairro" value="{{ selected.bairro if selected else '' }}"></label><label>Cidade<input name="cidade" id="cidade" value="{{ selected.cidade if selected else '' }}"></label><label>UF<input name="uf" id="uf" maxlength="2" value="{{ selected.uf if selected else '' }}"></label></div><div class="grid three"><label>CEP<input name="cep" id="cep" value="{{ selected.cep if selected else '' }}"></label><label>DDD<input name="ddd" id="ddd" value="{{ selected.ddd if selected else '' }}"></label><label>Telefone<input name="telefone" id="telefone" value="{{ selected.telefone if selected else '' }}"></label></div><label>E-mail<input name="email" id="email" type="email" value="{{ selected.email if selected else '' }}"></label><div class="actions"><button class="primary" type="submit" name="action" value="save">Salvar</button>{% if selected %}<button class="danger" type="submit" name="action" value="delete" onclick="return confirm('Deseja excluir este cliente?')">Excluir</button>{% endif %}</div><p class="form-note" id="cnpj-status" hidden></p></form><section class="panel"><div class="section-title"><h2>Clientes cadastrados</h2><span>{{ clientes|length }}</span></div>{% if clientes %}<div class="client-list">{% for cliente in clientes %}<a class="client-item {% if selected and selected.id == cliente.id %}active{% endif %}" href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}"><strong>{{ cliente.razao_social }}</strong><span>{{ cliente.cnpj or 'CNPJ não informado' }}</span><small>{{ cliente.cidade or 'Cidade não informada' }}{% if cliente.uf %} / {{ cliente.uf }}{% endif %}</small></a>{% endfor %}</div>{% else %}<p class="empty">Nenhum cliente cadastrado.</p>{% endif %}</section></section><script>const b=document.getElementById('buscar-cnpj'),s=document.getElementById('cnpj-status');function v(i,x){const f=document.getElementById(i);if(f&&x)f.value=x}b?.addEventListener('click',async()=>{const c=document.getElementById('cnpj').value.replace(/\\D/g,'');s.hidden=false;s.textContent='Consultando CNPJ...';try{const r=await fetch(`/api/cnpj/${c}`),d=await r.json();if(!r.ok){s.textContent=d.error||'Não foi possível consultar o CNPJ.';return}['razao_social','cnpj','rua','numero','bairro','cidade','uf','cep','ddd','telefone','email'].forEach(k=>v(k,d[k]));s.textContent='Dados preenchidos pelo CNPJ.'}catch(e){s.textContent='Serviço de CNPJ indisponível no momento.'}});</script>{% endblock %}""",
+    "clientes.html": """{% extends "base.html" %}{% block content %}<section class="split"><form class="panel form" method="post" action="{{ url_for('salvar_cliente') }}"><div class="section-title"><h1>{{ "Alterar cliente" if selected else "Novo cliente" }}</h1>{% if selected %}<a href="{{ url_for('clientes') }}">Novo cadastro</a>{% endif %}</div><input type="hidden" name="cliente_id" value="{{ selected.id if selected else '' }}"><div class="grid two"><label>CNPJ<input name="cnpj" id="cnpj" value="{{ selected.cnpj if selected else '' }}"></label><label>&nbsp;<button class="button" type="button" id="buscar-cnpj">Buscar CNPJ</button></label></div><label>Razão social *<input name="razao_social" id="razao_social" required value="{{ selected.razao_social if selected else '' }}"></label><label>Contato<input name="contato" id="contato" value="{{ selected.contato if selected else '' }}"></label><div class="grid two"><label>Rua<input name="rua" id="rua" value="{{ selected.rua if selected else '' }}"></label><label>Número<input name="numero" id="numero" value="{{ selected.numero if selected else '' }}"></label></div><div class="grid three"><label>Bairro<input name="bairro" id="bairro" value="{{ selected.bairro if selected else '' }}"></label><label>Cidade<input name="cidade" id="cidade" value="{{ selected.cidade if selected else '' }}"></label><label>UF<input name="uf" id="uf" maxlength="2" value="{{ selected.uf if selected else '' }}"></label></div><div class="grid three"><label>CEP<input name="cep" id="cep" value="{{ selected.cep if selected else '' }}"></label><label>DDD<input name="ddd" id="ddd" value="{{ selected.ddd if selected else '' }}"></label><label>Telefone<input name="telefone" id="telefone" value="{{ selected.telefone if selected else '' }}"></label></div><label>E-mail<input name="email" id="email" type="email" value="{{ selected.email if selected else '' }}"></label><div class="actions"><button class="primary" type="submit" name="action" value="save">Salvar</button>{% if selected %}<button class="danger" type="submit" name="action" value="delete" onclick="return confirm('Deseja excluir este cliente?')">Excluir</button>{% endif %}</div><p class="form-note" id="cnpj-status" hidden></p></form><section class="panel"><div class="section-title"><h2>Clientes cadastrados</h2><span>{{ clientes|length }}</span></div>{% if clientes %}<div class="client-list">{% for cliente in clientes %}<a class="client-item {% if selected and selected.id == cliente.id %}active{% endif %}" href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}"><strong>{{ cliente.razao_social }}</strong><span>{{ cliente.cnpj or 'CNPJ não informado' }}</span><small>{{ cliente.cidade or 'Cidade não informada' }}{% if cliente.uf %} / {{ cliente.uf }}{% endif %}</small></a>{% endfor %}</div>{% else %}<p class="empty">Nenhum cliente cadastrado.</p>{% endif %}</section></section><script>const b=document.getElementById('buscar-cnpj'),s=document.getElementById('cnpj-status');function v(i,x){const f=document.getElementById(i);if(f&&x)f.value=x}b?.addEventListener('click',async()=>{const c=document.getElementById('cnpj').value.replace(/\\D/g,'');s.hidden=false;s.textContent='Consultando CNPJ...';try{const r=await fetch(`/api/cnpj/${c}`),d=await r.json();if(!r.ok){s.textContent=d.error||'Não foi possível consultar o CNPJ.';return}['razao_social','cnpj','rua','numero','bairro','cidade','uf','cep','ddd','telefone','email'].forEach(k=>v(k,d[k]));s.textContent='Dados preenchidos pelo CNPJ.'}catch(e){s.textContent='Serviço de CNPJ indisponível no momento.'}});</script>{% endblock %}""",
     "insumos.html": """{% extends "base.html" %}{% block content %}<section class="split"><form class="panel form" method="post"><h1>Cadastro de insumos</h1><label>Tipo *<select name="tipo" required><option value="penetrante">Líquido penetrante</option><option value="revelador">Revelador</option><option value="particula">Partícula magnética</option></select></label><label>Fabricante<input name="fabricante"></label><div class="grid two"><label>Fabricação<input name="data_fabricacao" type="month"></label><label>Validade<input name="data_validade" type="month"></label></div><label>Lote<input name="lote"></label><button class="primary" type="submit">Salvar insumo</button></form><section class="panel"><h2>Insumos cadastrados</h2>{% if insumos %}<div class="list">{% for insumo in insumos %}<div class="client-item"><strong>{{ insumo.nome }}</strong><span>Lote {{ insumo.lote or '-' }} | Validade {{ insumo.data_validade or '-' }}</span></div>{% endfor %}</div>{% else %}<p class="empty">Nenhum insumo cadastrado.</p>{% endif %}</section></section>{% endblock %}""",
     "emitir_relatorio.html": """{% extends "base.html" %}{% block content %}<form class="panel form" method="post" enctype="multipart/form-data"><div class="section-title"><h1>Gerar Relatórios</h1><a href="{{ url_for('insumos') }}">Cadastrar insumos</a></div><div class="grid three"><label class="check-option"><input name="incluir_lp" type="checkbox" value="1" {% if default_report == 'lp' %}checked{% endif %}>Gerar Relatório de Líquidos Penetrantes</label><label class="check-option"><input name="incluir_pm" type="checkbox" value="1" {% if default_report == 'pm' %}checked{% endif %}>Gerar Relatório de Partículas Magnéticas</label><label class="check-option"><input name="incluir_us" type="checkbox" value="1" {% if default_report == 'us' %}checked{% endif %}>Gerar Relatório de Ultrassom</label></div><div class="grid two"><label>Formato de saída<select name="output_mode"><option value="unico">Gerar todos em um único arquivo</option><option value="separados">Gerar laudos separados</option></select></label><label>Cliente *<select name="cliente_id" required><option value="">Selecione...</option>{% for cliente in clientes %}<option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>{% endfor %}</select></label></div><div class="grid three"><label>Número do relatório *<input name="NUMRELATORIO" required></label><label>Data da inspeção<input name="DATA_INSP" type="date" value="{{ today }}"></label><label>Laudo<select name="LAUDO"><option value="A">Aprovado</option><option value="R">Reprovado</option></select></label></div><div class="grid two"><label>Peça inspecionada<input name="PECA_INSP"></label><label>Número do desenho / OP<input name="NUM_DESENHO"></label><label>Quantidade<input name="QUANTIDADE"></label><label>Local da inspeção<input name="LOCAL_INSP"></label><label>Temperatura<input name="TEMPERATURA"></label><label>Condição da superfície<input name="COND_SUPERFICIAL"></label><label>Material<input name="MATERIAL"></label><label>Região inspecionada<input name="REGIAO_INSP"></label><label>Espessura<input name="ESPESSURA"></label></div><section class="subsection"><h2>Insumos</h2><div class="grid three"><label>Líquido penetrante<select name="penetrante_id"><option value="">Selecione...</option>{% for insumo in penetrantes %}<option value="{{ insumo.id }}">{{ insumo.nome }}</option>{% endfor %}</select></label><label>Revelador<select name="revelador_id"><option value="">Selecione...</option>{% for insumo in reveladores %}<option value="{{ insumo.id }}">{{ insumo.nome }}</option>{% endfor %}</select></label><label>Partícula magnética<select name="particula_id"><option value="">Selecione...</option>{% for insumo in particulas %}<option value="{{ insumo.id }}">{{ insumo.nome }}</option>{% endfor %}</select></label></div></section><section class="subsection"><h2>Fotos</h2><div class="grid three"><label>Foto 1 / capa<input name="FOTO_1" type="file" accept="image/*"></label><label>Foto 2<input name="FOTO_2" type="file" accept="image/*"></label><label>Foto 3<input name="FOTO_3" type="file" accept="image/*"></label></div></section><button class="primary" type="submit">Gerar relatório</button></form>{% endblock %}""",
     "novo_relatorio.html": """{% extends "emitir_relatorio.html" %}""",
@@ -177,6 +188,7 @@ def _require_login():
         "signup",
         "setup",
         "forgot_password",
+        "activate_account",
         "oauth_google",
         "oauth_google_callback",
         "oauth_facebook",
@@ -240,10 +252,50 @@ def _create_google_user(db_session, profile: dict) -> User:
         email=email,
         password_hash=generate_password_hash(secrets.token_urlsafe(32)),
         role="admin",
+        is_active=1,
+        activated_at=datetime.now(),
     )
     db_session.add(user)
     db_session.commit()
     return user
+
+
+def _send_activation_email(user: User) -> bool:
+    if not user.activation_token:
+        return False
+
+    activation_url = _external_route("activate_account", token=user.activation_token)
+    host = os.environ.get("SMTP_HOST")
+    port = int(os.environ.get("SMTP_PORT", "587"))
+    username = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASSWORD")
+    sender = os.environ.get("SMTP_FROM") or username
+
+    if not host or not sender:
+        app.logger.warning("Activation link for %s: %s", user.email, activation_url)
+        return False
+
+    message = EmailMessage()
+    message["Subject"] = "Ative sua conta - Gerador de Relatórios"
+    message["From"] = sender
+    message["To"] = user.email
+    message.set_content(
+        f"Olá {user.nome},\n\n"
+        "Clique no link abaixo para ativar sua conta no Gerador de Relatórios:\n\n"
+        f"{activation_url}\n\n"
+        "Se você não solicitou este cadastro, ignore este e-mail."
+    )
+
+    try:
+        with smtplib.SMTP(host, port, timeout=20) as smtp:
+            smtp.starttls()
+            if username and password:
+                smtp.login(username, password)
+            smtp.send_message(message)
+        return True
+    except Exception:
+        app.logger.exception("Falha ao enviar e-mail de ativação para %s", user.email)
+        return False
 
 
 def _warn_ephemeral_storage_once() -> None:
@@ -327,6 +379,38 @@ def _json_ready(data: dict) -> dict:
 
 def _laudo_extenso(laudo: str) -> str:
     return "aprovado" if laudo == "A" else "reprovado"
+
+
+def _report_laudo_from_form(report_key: str) -> str:
+    value = request.form.get(f"{report_key.upper()}_LAUDO") or request.form.get("LAUDO") or "A"
+    return "R" if value == "R" else "A"
+
+
+def _apply_indication_fields(dados: dict, report_key: str = "") -> None:
+    prefix = f"{report_key.upper()}_" if report_key else ""
+    laudo = dados.get("LAUDO") or "A"
+    dados["LAUDO"] = "R" if laudo == "R" else "A"
+    dados["LAUDO_EXTENSO"] = _laudo_extenso(dados["LAUDO"])
+
+    if dados["LAUDO"] == "A":
+        tipo_desc = "Isento"
+        loc_desc = "Isento"
+        dim_desc = "Isento"
+    else:
+        tipo_desc = request.form.get(f"{prefix}TIPO_DESC", "").strip()
+        loc_desc = request.form.get(f"{prefix}LOC_DESC", "").strip()
+        dim_desc = request.form.get(f"{prefix}DIM_DESC", "").strip()
+
+    dados["TIPO_DESC"] = tipo_desc
+    dados["LOC_DESC"] = loc_desc
+    dados["DIM_DESC"] = dim_desc
+
+    if prefix:
+        dados[f"{prefix}TIPO_DESC"] = tipo_desc
+        dados[f"{prefix}LOC_DESC"] = loc_desc
+        dados[f"{prefix}DIM_DESC"] = dim_desc
+        dados[f"{prefix}LAUDO"] = dados["LAUDO"]
+        dados[f"{prefix}LAUDO_EXTENSO"] = dados["LAUDO_EXTENSO"]
 
 
 def _month_year(value: str) -> str:
@@ -426,7 +510,6 @@ def _fill_cliente(cliente: Cliente, form) -> None:
     cliente.razao_social = form.get("razao_social", "").strip()
     cliente.contato = form.get("contato") or None
     cliente.cnpj = form.get("cnpj") or None
-    cliente.ie = form.get("ie") or None
     cliente.rua = form.get("rua") or None
     cliente.numero = form.get("numero") or None
     cliente.bairro = form.get("bairro") or None
@@ -476,6 +559,8 @@ def setup():
                 email=email,
                 password_hash=generate_password_hash(password),
                 role="master",
+                is_active=1,
+                activated_at=datetime.now(),
             )
             db_session.add(user)
 
@@ -523,11 +608,17 @@ def signup():
                 email=email,
                 password_hash=generate_password_hash(password),
                 role="admin",
+                is_active=0,
+                activation_token=secrets.token_urlsafe(32),
             )
             db_session.add(user)
             db_session.commit()
-            browser_session["user_id"] = user.id
-            return redirect(url_for("dashboard"))
+            sent = _send_activation_email(user)
+            if sent:
+                flash("Cadastro criado. Enviamos um link de ativação para o seu e-mail.", "success")
+            else:
+                flash("Cadastro criado, mas o envio de e-mail ainda não está configurado. Configure o SMTP para liberar ativações.", "error")
+            return redirect(url_for("login"))
 
         return render_template("signup.html")
     finally:
@@ -549,11 +640,34 @@ def login():
                 flash("E-mail ou senha inválidos.", "error")
                 return redirect(url_for("login"))
 
+            if not user.is_active:
+                flash("Sua conta ainda não foi ativada. Verifique o link enviado por e-mail.", "error")
+                return redirect(url_for("login"))
+
             browser_session["user_id"] = user.id
             flash("Login realizado.", "success")
             return redirect(url_for("dashboard"))
 
         return render_template("login.html")
+    finally:
+        db_session.close()
+
+
+@app.route("/ativar-conta/<token>")
+def activate_account(token: str):
+    db_session = get_session()
+    try:
+        user = db_session.query(User).filter_by(activation_token=token).first()
+        if not user:
+            flash("Link de ativação inválido ou expirado.", "error")
+            return redirect(url_for("login"))
+
+        user.is_active = 1
+        user.activation_token = None
+        user.activated_at = datetime.now()
+        db_session.commit()
+        flash("Conta ativada com sucesso. Você já pode fazer login.", "success")
+        return redirect(url_for("login"))
     finally:
         db_session.close()
 
@@ -694,6 +808,7 @@ def dashboard():
             "index.html",
             clientes_count=clientes_count,
             report_types=REPORT_TYPES,
+            user_name=g.user_name or "usuário",
         )
     finally:
         session.close()
@@ -763,7 +878,6 @@ def clientes():
                 razao_social=razao_social,
                 contato=request.form.get("contato") or None,
                 cnpj=request.form.get("cnpj") or None,
-                ie=request.form.get("ie") or None,
                 rua=request.form.get("rua") or None,
                 numero=request.form.get("numero") or None,
                 bairro=request.form.get("bairro") or None,
@@ -975,9 +1089,9 @@ def novo_relatorio(report_key):
                 "DATA_INSP": _parse_date(request.form.get("DATA_INSP", "")),
                 "LAUDO": request.form.get("LAUDO") or "A",
             }
-            dados["LAUDO_EXTENSO"] = _laudo_extenso(dados["LAUDO"])
             for field_name, _label, _field_type in config["fields"]:
                 dados[field_name] = request.form.get(field_name, "").strip()
+            _apply_indication_fields(dados)
 
             if report_key == "lp":
                 if not request.form.get("penetrante_id") or not request.form.get("revelador_id"):
@@ -1028,6 +1142,8 @@ def novo_relatorio(report_key):
     except Exception as exc:
         session.rollback()
         flash(f"Falha ao gerar relatório: {exc}", "error")
+        if request.method == "GET":
+            return redirect(url_for("dashboard"))
         return redirect(url_for("novo_relatorio", report_key=report_key))
     finally:
         session.close()
@@ -1081,9 +1197,7 @@ def emitir_relatorio():
             dados = {
                 "NUMRELATORIO": numrel,
                 "DATA_INSP": _parse_date(request.form.get("DATA_INSP", "")),
-                "LAUDO": request.form.get("LAUDO") or "A",
             }
-            dados["LAUDO_EXTENSO"] = _laudo_extenso(dados["LAUDO"])
 
             field_names = []
             for report_key in selected:
@@ -1107,6 +1221,8 @@ def emitir_relatorio():
             for report_key in selected:
                 report_data = dict(dados)
                 prefix = report_key.upper()
+                report_data["LAUDO"] = _report_laudo_from_form(report_key)
+                _apply_indication_fields(report_data, report_key)
                 report_data["FOTO_2"] = _save_upload(numrel, f"{prefix}_FOTO_2")
                 report_data["FOTO_3"] = _save_upload(numrel, f"{prefix}_FOTO_3")
                 dados_por_relatorio[report_key] = report_data
@@ -1179,6 +1295,8 @@ def emitir_relatorio():
     except Exception as exc:
         db_session.rollback()
         flash(f"Falha ao gerar relatório: {exc}", "error")
+        if request.method == "GET":
+            return redirect(url_for("dashboard"))
         return redirect(url_for("emitir_relatorio"))
     finally:
         db_session.close()

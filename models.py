@@ -126,6 +126,9 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False, default="admin")
+    is_active = Column(Integer, nullable=False, default=0)
+    activation_token = Column(String, nullable=True)
+    activated_at = Column(DateTime, nullable=True)
     criado_em = Column(DateTime, default=datetime.now)
 
     organization = relationship("Organization", back_populates="users")

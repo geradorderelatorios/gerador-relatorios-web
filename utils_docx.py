@@ -32,8 +32,10 @@ def replace_placeholder_in_paragraph(paragraph, key: str, value: str):
         if key in run.text:
             run.text = run.text.replace(key, value)
 
-    # ❌ NÃO reescrevemos paragraph.text inteiro,
-    # para não perder a formatação original.
+    if key in paragraph.text:
+        paragraph.text = paragraph.text.replace(key, value)
+
+    # Fallback para placeholders que o Word dividiu entre runs.
 
 
 def _replace_in_paragraphs_collection(paragraphs, mapping: dict):
