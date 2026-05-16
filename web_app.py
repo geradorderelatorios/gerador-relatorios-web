@@ -1,7 +1,9 @@
 import json
 import os
 import re
+import secrets
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from datetime import date, datetime
@@ -24,6 +26,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 UPLOAD_DIR = os.environ.get("RL_METAIS_UPLOAD_DIR") or os.path.join(BASE_DIR, "web_uploads")
 ORG_TEMPLATES_DIR = os.environ.get("RL_METAIS_TEMPLATE_DIR") or os.path.join(BASE_DIR, "organization_templates")
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 REPORT_TYPES = {
     "lp": {
@@ -166,7 +171,18 @@ def _current_user(db_session):
 
 
 def _require_login():
-    open_routes = {"index", "login", "signup", "setup", "forgot_password", "oauth_google", "oauth_facebook", "oauth_apple", "static"}
+    open_routes = {
+        "index",
+        "login",
+        "signup",
+        "setup",
+        "forgot_password",
+        "oauth_google",
+        "oauth_google_callback",
+        "oauth_facebook",
+        "oauth_apple",
+        "static",
+    }
     g.user_id = None
     g.organization_id = None
     g.user_name = ""
@@ -195,6 +211,39 @@ def _require_login():
 
 def _current_org_id() -> int:
     return int(g.organization_id)
+
+
+def _external_route(endpoint: str, **values) -> str:
+    public_base_url = os.environ.get("PUBLIC_BASE_URL") or os.environ.get("APP_BASE_URL")
+    if public_base_url:
+        return public_base_url.rstrip("/") + url_for(endpoint, **values)
+    return url_for(endpoint, _external=True, **values)
+
+
+def _read_json_response(req: urllib.request.Request) -> dict:
+    with urllib.request.urlopen(req, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _create_google_user(db_session, profile: dict) -> User:
+    email = profile.get("email", "").strip().lower()
+    name = profile.get("name") or email.split("@", 1)[0] or "Usuário Google"
+    organization_name = profile.get("hd") or f"Empresa de {name}"
+
+    org = Organization(nome=organization_name)
+    db_session.add(org)
+    db_session.flush()
+
+    user = User(
+        organization_id=org.id,
+        nome=name,
+        email=email,
+        password_hash=generate_password_hash(secrets.token_urlsafe(32)),
+        role="admin",
+    )
+    db_session.add(user)
+    db_session.commit()
+    return user
 
 
 def _ensure_report_type(session, config: dict) -> TipoRelatorio:
@@ -503,8 +552,89 @@ def forgot_password():
 
 @app.route("/auth/google")
 def oauth_google():
-    flash("Login com Google ainda precisa ser configurado no provedor OAuth.", "error")
-    return redirect(url_for("login"))
+    client_id = os.environ.get("GOOGLE_CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        flash("Login com Google ainda não foi configurado no servidor.", "error")
+        return redirect(url_for("login"))
+
+    state = secrets.token_urlsafe(32)
+    browser_session["google_oauth_state"] = state
+
+    params = urllib.parse.urlencode({
+        "client_id": client_id,
+        "redirect_uri": _external_route("oauth_google_callback"),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "prompt": "select_account",
+    })
+    return redirect(f"{GOOGLE_AUTH_URL}?{params}")
+
+
+@app.route("/auth/google/callback")
+def oauth_google_callback():
+    expected_state = browser_session.pop("google_oauth_state", None)
+    received_state = request.args.get("state")
+    if not expected_state or received_state != expected_state:
+        flash("Não foi possível validar o login com Google. Tente novamente.", "error")
+        return redirect(url_for("login"))
+
+    if request.args.get("error"):
+        flash("Login com Google cancelado.", "error")
+        return redirect(url_for("login"))
+
+    code = request.args.get("code")
+    if not code:
+        flash("O Google não retornou o código de autenticação.", "error")
+        return redirect(url_for("login"))
+
+    token_payload = urllib.parse.urlencode({
+        "code": code,
+        "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
+        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+        "redirect_uri": _external_route("oauth_google_callback"),
+        "grant_type": "authorization_code",
+    }).encode("utf-8")
+
+    token_req = urllib.request.Request(
+        GOOGLE_TOKEN_URL,
+        data=token_payload,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+
+    try:
+        token_data = _read_json_response(token_req)
+        access_token = token_data.get("access_token")
+        if not access_token:
+            raise ValueError("missing access_token")
+
+        user_req = urllib.request.Request(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        profile = _read_json_response(user_req)
+    except (urllib.error.URLError, urllib.error.HTTPError, ValueError, json.JSONDecodeError):
+        flash("Não foi possível concluir o login com Google agora.", "error")
+        return redirect(url_for("login"))
+
+    email = profile.get("email", "").strip().lower()
+    if not email or profile.get("email_verified") is False:
+        flash("A conta Google precisa ter um e-mail verificado.", "error")
+        return redirect(url_for("login"))
+
+    db_session = get_session()
+    try:
+        user = db_session.query(User).filter_by(email=email).first()
+        if not user:
+            user = _create_google_user(db_session, profile)
+
+        browser_session["user_id"] = user.id
+        flash("Login com Google realizado.", "success")
+        return redirect(url_for("dashboard"))
+    finally:
+        db_session.close()
 
 
 @app.route("/auth/facebook")
