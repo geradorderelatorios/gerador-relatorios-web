@@ -1,12 +1,31 @@
 import os
 import json
 
+
+def _default_data_dir() -> str:
+    explicit_dir = os.environ.get("RL_METAIS_DATA_DIR")
+    if explicit_dir:
+        return os.path.abspath(explicit_dir)
+
+    for env_name in ("RENDER_DISK_PATH", "RENDER_PERSISTENT_DIR"):
+        value = os.environ.get(env_name)
+        if value:
+            return os.path.join(value, "RLMetais")
+
+    if os.environ.get("RENDER") and os.path.isdir("/var/data"):
+        return os.path.join("/var/data", "RLMetais")
+
+    return os.path.join(os.environ.get("LOCALAPPDATA", BASE_DIR), "RLMetais")
+
 # Pasta base do projeto (onde está este arquivo)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, "config_relatorios.json")
 
 # Pasta padrão (se o usuário não configurar outra)
-DEFAULT_OUTPUT_DIR = os.environ.get("RL_METAIS_OUTPUT_DIR") or os.path.join(BASE_DIR, "output")
+DEFAULT_OUTPUT_DIR = os.environ.get("RL_METAIS_OUTPUT_DIR") or os.path.join(
+    _default_data_dir(),
+    "output",
+)
 
 
 def _carregar_config() -> dict:

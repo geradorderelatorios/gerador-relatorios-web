@@ -11,16 +11,66 @@ DB_FILE = "relatorios_end.db"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Pasta de dados do usuário (ex.: C:\Users\Aline\AppData\Local\RLMetais)
-APPDATA_DIR = os.environ.get("RL_METAIS_DATA_DIR") or os.path.join(
-    os.environ.get("LOCALAPPDATA", BASE_DIR),
-    "RLMetais"
-)
-os.makedirs(APPDATA_DIR, exist_ok=True)
-
-DB_PATH = os.path.join(APPDATA_DIR, DB_FILE)
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+
+def _writable_dir(path: str) -> bool:
+    try:
+        os.makedirs(path, exist_ok=True)
+        test_path = os.path.join(path, ".write-test")
+        with open(test_path, "w", encoding="utf-8") as file:
+            file.write("ok")
+        os.remove(test_path)
+        return True
+    except Exception:
+        return False
+
+
+def _resolve_appdata_dir() -> tuple[str, str]:
+    explicit_dir = os.environ.get("RL_METAIS_DATA_DIR")
+    if explicit_dir:
+        return os.path.abspath(explicit_dir), "RL_METAIS_DATA_DIR"
+
+    for env_name in ("RENDER_DISK_PATH", "RENDER_PERSISTENT_DIR"):
+        value = os.environ.get(env_name)
+        if value and _writable_dir(value):
+            return os.path.join(value, "RLMetais"), env_name
+
+    render_default = "/var/data"
+    if os.environ.get("RENDER") and os.path.isdir(render_default) and _writable_dir(render_default):
+        return os.path.join(render_default, "RLMetais"), "Render disk /var/data"
+
+    return os.path.join(os.environ.get("LOCALAPPDATA", BASE_DIR), "RLMetais"), "local fallback"
+
+
+# Pasta de dados do usuario. Em producao, use DATABASE_URL/PostgreSQL ou disco persistente.
+APPDATA_DIR, APPDATA_SOURCE = _resolve_appdata_dir()
+os.makedirs(APPDATA_DIR, exist_ok=True)
+os.environ.setdefault("RL_METAIS_DATA_DIR", APPDATA_DIR)
+
+DB_PATH = os.path.join(APPDATA_DIR, DB_FILE)
+
+
+def is_persistent_database() -> bool:
+    if DATABASE_URL:
+        return True
+    if os.environ.get("RL_METAIS_DATA_DIR") and APPDATA_SOURCE == "RL_METAIS_DATA_DIR":
+        if os.environ.get("RENDER") and os.path.abspath(APPDATA_DIR).startswith(os.path.abspath(BASE_DIR)):
+            return False
+        return os.path.isabs(APPDATA_DIR)
+    return APPDATA_SOURCE != "local fallback"
+
+
+def get_database_diagnostics() -> dict:
+    return {
+        "database_url_configured": bool(DATABASE_URL),
+        "db_path": DB_PATH,
+        "appdata_dir": APPDATA_DIR,
+        "appdata_source": APPDATA_SOURCE,
+        "persistent": is_persistent_database(),
+    }
 
 # Migra um banco antigo que esteja na pasta da aplicação, se existir
 LEGACY_DB_PATH = os.path.join(BASE_DIR, DB_FILE)
@@ -36,6 +86,7 @@ Engine = create_engine(
     DATABASE_URL or f"sqlite:///{DB_PATH}",
     echo=False,
     future=True,
+    pool_pre_ping=True,
 )
 
 # Classe base para os modelos ORM

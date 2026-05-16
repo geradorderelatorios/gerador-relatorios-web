@@ -65,3 +65,10 @@ Crie a empresa e o usuario administrador.
 ## Observacao importante
 
 Hospedagens com filesystem temporario apagam o SQLite e os arquivos gerados a cada redeploy/restart. Para uso real, prefira PostgreSQL e storage persistente.
+
+No Render, configure obrigatoriamente uma destas opcoes antes de usar em producao:
+
+- `DATABASE_URL` apontando para um PostgreSQL do Render.
+- ou um Disk persistente, com `RL_METAIS_DATA_DIR`, `RL_METAIS_OUTPUT_DIR`, `RL_METAIS_UPLOAD_DIR` e `RL_METAIS_TEMPLATE_DIR` apontando para o caminho do Disk.
+
+Sem uma dessas configuracoes, os cadastros feitos no site podem desaparecer depois de deploy, restart ou troca de instancia.

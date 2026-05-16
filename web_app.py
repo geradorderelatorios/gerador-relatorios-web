@@ -14,7 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from config_relatorios import get_output_dir
-from database import get_session, init_db
+from database import APPDATA_DIR, get_database_diagnostics, get_session, init_db, is_persistent_database
 from models import Cliente, EntradaRelatorio, Insumo, Organization, TemplateEmpresa, TipoRelatorio, User
 from reports_lp import generate_lp_report
 from reports_pm import generate_pm_report
@@ -24,8 +24,8 @@ from reports_ultrassom import generate_ultrassom_report
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
-UPLOAD_DIR = os.environ.get("RL_METAIS_UPLOAD_DIR") or os.path.join(BASE_DIR, "web_uploads")
-ORG_TEMPLATES_DIR = os.environ.get("RL_METAIS_TEMPLATE_DIR") or os.path.join(BASE_DIR, "organization_templates")
+UPLOAD_DIR = os.environ.get("RL_METAIS_UPLOAD_DIR") or os.path.join(APPDATA_DIR, "uploads")
+ORG_TEMPLATES_DIR = os.environ.get("RL_METAIS_TEMPLATE_DIR") or os.path.join(APPDATA_DIR, "organization_templates")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
@@ -246,6 +246,18 @@ def _create_google_user(db_session, profile: dict) -> User:
     return user
 
 
+def _warn_ephemeral_storage_once() -> None:
+    if is_persistent_database() or browser_session.get("storage_warning_seen"):
+        return
+
+    browser_session["storage_warning_seen"] = True
+    flash(
+        "Atenção: o servidor está sem banco persistente configurado. "
+        "Cadastros podem sumir em reinícios ou novos deploys. Configure DATABASE_URL/PostgreSQL no Render.",
+        "error",
+    )
+
+
 def _ensure_report_type(session, config: dict) -> TipoRelatorio:
     tipo = session.query(TipoRelatorio).filter_by(nome=config["db_name"]).first()
     if tipo:
@@ -433,6 +445,8 @@ def bootstrap():
     login_redirect = _require_login()
     if login_redirect:
         return login_redirect
+    if g.user_id:
+        _warn_ephemeral_storage_once()
 
 
 @app.route("/setup", methods=["GET", "POST"])
@@ -654,6 +668,15 @@ def logout():
     browser_session.clear()
     flash("Você saiu da aplicação.", "success")
     return redirect(url_for("login"))
+
+
+@app.route("/admin/storage")
+def storage_diagnostics():
+    diagnostics = get_database_diagnostics()
+    diagnostics["upload_dir"] = UPLOAD_DIR
+    diagnostics["templates_dir"] = ORG_TEMPLATES_DIR
+    diagnostics["output_dir"] = get_output_dir()
+    return jsonify(diagnostics)
 
 
 @app.route("/")
