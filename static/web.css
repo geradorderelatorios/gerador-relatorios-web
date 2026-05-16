@@ -31,6 +31,22 @@ button, input, select {
   font: inherit;
 }
 
+.svg-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
 .app-shell {
   min-height: 100vh;
   display: grid;
@@ -128,9 +144,9 @@ button, input, select {
 
 .nav-ico {
   width: 22px;
+  height: 22px;
   color: #b7c7ed;
-  text-align: center;
-  font-size: 19px;
+  flex: 0 0 auto;
 }
 
 .help-card {
@@ -153,6 +169,11 @@ button, input, select {
   font-weight: 900;
 }
 
+.help-card .help-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
 .help-card strong {
   color: white;
   font-size: 15px;
@@ -170,12 +191,18 @@ button, input, select {
   min-height: 42px;
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   padding: 0 16px;
   border-radius: 8px;
   color: white;
   background: #173f9e;
   font-weight: 800;
   font-size: 14px;
+}
+
+.help-card a svg {
+  width: 15px;
+  height: 15px;
 }
 
 .sidebar-user {
@@ -220,7 +247,12 @@ button, input, select {
   color: white;
   background: transparent;
   cursor: pointer;
-  font-size: 20px;
+  padding: 0;
+}
+
+.sidebar-user button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .workspace {
@@ -250,8 +282,15 @@ button, input, select {
 .top-icon {
   position: relative;
   color: #071642;
-  font-size: 23px;
-  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+
+.top-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .top-icon.bell b {
@@ -270,7 +309,14 @@ button, input, select {
 
 .top-user strong { color: var(--text); }
 .top-user small { color: var(--muted); }
-.chevron { color: var(--text); font-size: 20px; }
+.chevron {
+  color: var(--text);
+}
+
+.chevron svg {
+  width: 20px;
+  height: 20px;
+}
 
 .page {
   width: 100%;
@@ -444,8 +490,14 @@ input[type="file"]::file-selector-button {
   top: 50%;
   transform: translateY(-50%);
   color: #1b63ff;
-  font-size: 17px;
   z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+.input-icon > span svg {
+  width: 18px;
+  height: 18px;
 }
 
 .input-icon input,
@@ -482,8 +534,14 @@ input[type="file"]::file-selector-button {
 
 .option-icon {
   color: #1265ff;
-  font-size: 25px;
   text-align: center;
+  display: grid;
+  place-items: center;
+}
+
+.option-icon svg {
+  width: 27px;
+  height: 27px;
 }
 
 .section-line {

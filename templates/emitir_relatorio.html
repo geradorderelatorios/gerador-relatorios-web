@@ -14,24 +14,24 @@
   <div class="report-options">
     <label class="check-option">
       <input name="incluir_lp" type="checkbox" value="1" checked>
-      <span class="option-icon">◊</span>
+      <span class="option-icon"><svg><use href="#icon-droplet"></use></svg></span>
       <span>Gerar Relatório de<br>Líquidos Penetrantes</span>
     </label>
     <label class="check-option">
       <input name="incluir_pm" type="checkbox" value="1">
-      <span class="option-icon">ↄ</span>
+      <span class="option-icon"><svg><use href="#icon-magnet"></use></svg></span>
       <span>Gerar Relatório de<br>Partículas Magnéticas</span>
     </label>
     <label class="check-option">
       <input name="incluir_us" type="checkbox" value="1">
-      <span class="option-icon">)))</span>
+      <span class="option-icon"><svg><use href="#icon-waves"></use></svg></span>
       <span>Gerar Relatório de<br>Ultrassom</span>
     </label>
   </div>
 
   <div class="grid two">
     <label>Formato de saída
-      <span class="input-icon"><span>▧</span>
+      <span class="input-icon"><span><svg><use href="#icon-files"></use></svg></span>
         <select name="output_mode">
           <option value="unico">Gerar todos em um único arquivo</option>
           <option value="separados">Gerar laudos separados</option>
@@ -39,7 +39,7 @@
       </span>
     </label>
     <label>Cliente *
-      <span class="input-icon"><span>♙</span>
+      <span class="input-icon"><span><svg><use href="#icon-users"></use></svg></span>
         <select name="cliente_id" required>
           <option value="">Selecione...</option>
           {% for cliente in clientes %}
@@ -52,13 +52,13 @@
 
   <div class="grid report-top">
     <label>Número do relatório *
-      <span class="input-icon"><span>#</span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
+      <span class="input-icon"><span><svg><use href="#icon-hash"></use></svg></span><input name="NUMRELATORIO" placeholder="Auto (será gerado)" required></span>
     </label>
     <label>Data da inspeção
-      <span class="input-icon"><span>▣</span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
+      <span class="input-icon"><span><svg><use href="#icon-calendar"></use></svg></span><input name="DATA_INSP" type="date" value="{{ today }}"></span>
     </label>
     <label>Laudo
-      <span class="input-icon"><span>♡</span>
+      <span class="input-icon"><span><svg><use href="#icon-shield"></use></svg></span>
         <select name="LAUDO">
           <option value="A">Aprovado</option>
           <option value="R">Reprovado</option>
@@ -100,7 +100,7 @@
   <div class="section-line"><h2>Insumos</h2></div>
   <div class="grid three">
     <label>Líquido penetrante
-      <span class="input-icon"><span>◊</span>
+      <span class="input-icon"><span><svg><use href="#icon-droplet"></use></svg></span>
         <select name="penetrante_id">
           <option value="">Selecione...</option>
           {% for insumo in penetrantes %}
@@ -110,7 +110,7 @@
       </span>
     </label>
     <label>Revelador
-      <span class="input-icon"><span>▦</span>
+      <span class="input-icon"><span><svg><use href="#icon-box"></use></svg></span>
         <select name="revelador_id">
           <option value="">Selecione...</option>
           {% for insumo in reveladores %}
@@ -120,7 +120,7 @@
       </span>
     </label>
     <label>Partícula magnética
-      <span class="input-icon"><span>ↄ</span>
+      <span class="input-icon"><span><svg><use href="#icon-magnet"></use></svg></span>
         <select name="particula_id">
           <option value="">Selecione...</option>
           {% for insumo in particulas %}
