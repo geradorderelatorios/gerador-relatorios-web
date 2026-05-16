@@ -169,7 +169,12 @@ def generate_end_combo_report(
         dados_us_full = dict(dados_comuns)
         if dados_us:
             dados_us_full.update(dados_us)
-        us_path = generate_ultrassom_report(dados_us_full, us_template, tmp_dir)
+        us_path = generate_ultrassom_report(
+            dados_us_full,
+            us_template,
+            tmp_dir,
+            incluir_capa=False,
+        )
         generated_paths.append(us_path)
 
     # --------- MERGE SEGURO COM DOXCCOMPOSE ---------
@@ -186,8 +191,8 @@ def generate_end_combo_report(
     final_docx_path = os.path.join(output_dir, final_docx_name)
     composer.save(final_docx_path)
 
-    # --------- Gera PDF (opcional, se conseguir) ---------
-    final_pdf_path = _try_generate_pdf(final_docx_path)
+    # O download web usa DOCX; evitar conversao para PDF reduz o tempo de geracao.
+    final_pdf_path = None
 
     # --------- Limpa pasta temporária ---------
     import shutil

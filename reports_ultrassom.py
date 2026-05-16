@@ -62,7 +62,12 @@ def _montar_mapping(dados: dict) -> dict:
     return mapping
 
 
-def generate_ultrassom_report(dados: dict, template_path: str, output_dir: str) -> str:
+def generate_ultrassom_report(
+    dados: dict,
+    template_path: str,
+    output_dir: str,
+    incluir_capa: bool = True,
+) -> str:
     """
     Gera o relatório de Ultrassom (US) com:
     - CAPA (CAPA_TEMPLATE.docx)
@@ -86,7 +91,7 @@ def generate_ultrassom_report(dados: dict, template_path: str, output_dir: str) 
     capa_path = os.path.join(base_dir, CAPA_TEMPLATE_NAME)
 
     doc_capa = None
-    if os.path.exists(capa_path):
+    if incluir_capa and os.path.exists(capa_path):
         # CAPA usa placeholders próprios, inclusive {{FOTO_1}}
         doc_capa = Document(capa_path)
         replace_placeholders(doc_capa, mapping)
